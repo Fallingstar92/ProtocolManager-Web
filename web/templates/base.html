@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="cs">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ app_title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
+</head>
+<body>
+    <main class="app-shell">
+<header class="titlebar">
+
+</header>
+
+        <section class="hero glow-card">
+        {% if request.url.path == "/customers" %}
+            <h1>Zákazníci</h1>
+            <p>Správa zákazníků, serverů a adres.</p>
+        {% else %}
+             <h1>Protocol Manager</h1>
+             <p>Rychlé vytváření předávacích protokolů</p>
+        {% endif %}
+
+            <div class="hero-nav">
+                {% if request.url.path == "/customers" %}
+                    <a class="nav-button" href="/">Zpět</a>
+                {% else %}
+                    <button class="nav-button" type="button" onclick="resetProtocolForm()">Nový protokol</button>
+                    <button class="nav-button" type="button" onclick="document.querySelector('#settings-dialog').showModal()">Nastavení</button>
+                {% endif %}
+            </div>
+
+        </section>
+
+        {% block content %}{% endblock %}
+
+    </main>
+    <script>
+function resetProtocolForm() {
+    const form = document.querySelector(".protocol-form");
+    if (!form) return;
+
+    const jira = form.querySelector("[name='jira']");
+    if (jira) jira.value = "";
+
+    const customer = form.querySelector("[name='customer_name']");
+    if (customer) customer.value = "";
+
+    const todayInput = form.querySelector("[name='protocol_date']");
+    if (todayInput) {
+        const today = new Date().toISOString().slice(0, 10);
+        todayInput.value = today;
+    }
+
+    form.querySelectorAll("[name='item_type']").forEach(input => input.value = "");
+    form.querySelectorAll("[name='item_value']").forEach(input => input.value = "");
+    form.querySelectorAll("[name='item_count']").forEach(input => input.value = "");
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+}
+function addItemRow() {
+    const table = document.querySelector(".items-table");
+    if (!table) return;
+
+    const row = document.createElement("div");
+    row.className = "item-row";
+    row.innerHTML = `
+        <input name="item_type" placeholder="Flash / Chip / Univerzální flash">
+        <input name="item_value" placeholder="Sériové číslo nebo poznámka">
+        <input name="item_count" placeholder="Počet">
+        <button class="remove-item-button" type="button" onclick="removeItemRow(this)">Smazat</button>
+    `;
+
+    table.appendChild(row);
+}
+
+function removeItemRow(button) {
+    const row = button.closest(".item-row");
+    if (!row) return;
+
+    const rows = document.querySelectorAll(".item-row");
+    if (rows.length <= 1) {
+        row.querySelectorAll("input").forEach(input => input.value = "");
+        return;
+    }
+
+    row.remove();
+}
+</script>
+</body>
+</html>

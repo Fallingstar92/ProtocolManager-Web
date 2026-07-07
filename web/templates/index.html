@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block content %}
+<form class="protocol-form" action="/preview" method="post">
+
+<section class="recent-card">
+    <h2>Nedávní zákazníci</h2>
+    <div class="recent-row">
+        {% for customer in recent_customers %}
+            <button
+                class="recent-button"
+                type="button"
+                onclick="selectRecentCustomer(this, '{{ customer.company }}{% if customer.server %} ({{ customer.server }}){% endif %}')"
+            >
+                {{ customer.company }}{% if customer.server %} ({{ customer.server }}){% endif %}
+            </button>
+        {% endfor %}
+    </div>
+</section>
+
+    <section class="card form-card">
+        <div class="field-group wide">
+            <label>Zákazník</label>
+            <input name="customer_name" list="customers" value="{{ selected_customer_name }}" placeholder="Piš název zákazníka nebo server, např. Gapa nebo r47" required>
+            <datalist id="customers">
+                {% for name in customer_names %}<option value="{{ name }}"></option>{% endfor %}
+            </datalist>
+        </div>
+
+        <div class="field-group">
+            <label>Datum</label>
+            <input name="protocol_date" type="date" value="{{ today }}" required>
+        </div>
+
+        <div class="field-group wide">
+            <label>Jira</label>
+            <input name="jira" placeholder="např. SUP-847">
+        </div>
+
+        <div class="field-group">
+            <label>Převzal</label>
+            <input name="receiver" list="receivers" value="{{ selected_receiver }}" placeholder="Piš dopravce nebo zákazníka">
+            <datalist id="receivers">
+                {% for name in receiver_names %}<option value="{{ name }}"></option>{% endfor %}
+            </datalist>
+        </div>
+
+        <div class="field-group wide">
+            <label>Číslo protokolu</label>
+            <input name="protocol_number" class="protocol-number" value="{{ protocol_number }}" required>
+        </div>
+
+        <div class="field-group">
+            <label>Předal</label>
+            <input name="sender_name" value="{{ sender_name }}" required>
+        </div>
+    </section>
+
+    <section class="card items-card">
+        <h2>PŘEDMĚTY</h2>
+        <div class="items-table">
+            <div class="table-head">Typ</div>
+            <div class="table-head">SN</div>
+            <div class="table-head">Počet</div>
+            <div class="table-head"></div>
+            <div class="item-row">
+    <input name="item_type" placeholder="Flash / Chip / Univerzální flash">
+    <input name="item_value" placeholder="Sériové číslo nebo poznámka">
+    <input name="item_count" placeholder="Počet">
+    <button class="remove-item-button" type="button" onclick="removeItemRow(this)">Smazat</button>
+    </div>
+</div>
+
+<button class="secondary-button add-item-button" type="button" onclick="addItemRow()">+ Přidat položku</button>
+    </section>
+
+<section class="actions">
+    <button class="primary-button" type="submit">Náhled PDF a Tisk</button>
+</section>
+</form>
+
+<dialog id="settings-dialog" class="settings-dialog">
+    <form action="/settings" method="post" class="settings-form">
+        <h2>Nastavení</h2>
+        <label>Jméno uživatele</label>
+        <input name="sender_name" value="{{ sender_name }}" required>
+        <label>Výchozí číslo protokolu</label>
+        <input name="protocol_number" value="{{ protocol_number }}" required>
+        <a class="primary-button settings-link-button" href="/customers">
+            Správa zákazníků
+        </a>
+
+        <div class="actions compact">
+            <button class="secondary-button" type="button" onclick="document.querySelector('#settings-dialog').close()">Zavřít</button>
+            <button class="primary-button" type="submit">Uložit</button>
+        </div>
+    </form>
+</dialog>
+<script>
+function selectRecentCustomer(button, customerName) {
+    document.querySelector('[name=customer_name]').value = customerName;
+
+    document.querySelectorAll('.recent-button').forEach((item) => {
+        item.classList.remove('active');
+    });
+
+    button.classList.add('active');
+}
+</script>
+{% endblock %}

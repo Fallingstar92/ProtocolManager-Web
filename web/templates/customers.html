@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="glow-card customers-card">
+
+    </div>
+
+    <form class="customer-form customer-add-form" method="post" action="/customers/add">
+        <div class="customer-fields">
+            <label>
+                Název zákazníka
+                <input name="company" placeholder="Např. DOXXbet s.r.o." required>
+            </label>
+
+            <label>
+                Server
+                <input name="server" placeholder="Např. r203">
+            </label>
+
+            <label>
+                Adresa
+                <input name="address" placeholder="Např. Praha, ulice...">
+            </label>
+        </div>
+
+        <button class="primary-button" type="submit">Přidat zákazníka</button>
+    </form>
+
+    <div class="customers-list">
+        {% for customer in customers %}
+        <form class="customer-form customer-existing-form" method="post" action="/customers/update/{{ customer.id }}"
+            <div class="customer-fields">
+                <label>
+                    Název zákazníka
+                    <input name="company" value="{{ customer.company }}" required>
+                </label>
+
+                <label>
+                    Server
+                    <input name="server" value="{{ customer.server }}">
+                </label>
+
+                <label>
+                    Adresa
+                    <input name="address" value="{{ customer.address }}">
+                </label>
+            </div>
+
+            <div class="customer-actions">
+                <button class="primary-button" type="submit">Uložit</button>
+                <button
+                    class="danger-button"
+                    type="submit"
+                    formaction="/customers/delete/{{ customer.id }}"
+                    onclick="return confirm('Opravdu smazat zákazníka?')"
+                >
+                    Smazat
+                </button>
+            </div>
+        </form>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
