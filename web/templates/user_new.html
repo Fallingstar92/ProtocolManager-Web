@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="card account-card">
+    <h2>Nový uživatel</h2>
+
+    {% if error %}
+        <div class="alert error">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" action="/users/new">
+        <div class="field-group">
+            <label>Login</label>
+            <input name="username" value="" required>
+        </div>
+
+        <div class="field-group">
+            <label>Jméno a příjmení</label>
+            <input name="full_name" value="" required>
+        </div>
+
+        <div class="field-group">
+            <label>Role</label>
+            <select name="role">
+                <option value="user" selected>user</option>
+                <option value="admin">admin</option>
+            </select>
+        </div>
+
+        <div class="field-group">
+    <div class="switch-row">
+        <span>Aktivní účet</span>
+
+        <label class="switch">
+            <input
+                type="checkbox"
+                name="active"
+                value="1"
+                checked>
+            <span class="slider"></span>
+        </label>
+    </div>
+</div>
+
+        <div class="field-group">
+            <label>Heslo</label>
+            <input name="new_password" type="password" required>
+        </div>
+
+        <div class="field-group">
+            <label>Potvrzení hesla</label>
+            <input name="confirm_password" type="password" required>
+        </div>
+
+        <div class="bottom-actions">
+    <a class="secondary-button" href="/users">← Zpět</a>
+
+    <button class="primary-button" type="submit">
+        Vytvořit
+    </button>
+</div>
+    </form>
+</section>
+{% endblock %}

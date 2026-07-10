@@ -28,7 +28,10 @@
 
     <div class="customers-list">
         {% for customer in customers %}
-        <form class="customer-form customer-existing-form" method="post" action="/customers/update/{{ customer.id }}"
+        <form class="customer-form customer-existing-form" 
+              method="post" 
+              action="/customers/update/{{ customer.id }}">
+            
             <div class="customer-fields">
                 <label>
                     Název zákazníka

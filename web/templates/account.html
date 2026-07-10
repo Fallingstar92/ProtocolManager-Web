@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="card account-card">
+    <h2>Můj účet</h2>
+
+    {% if error %}
+        <div class="alert error">{{ error }}</div>
+    {% endif %}
+
+    {% if status %}
+        <div class="alert success">{{ status }}</div>
+    {% endif %}
+
+    {% if force_password %}
+        <div class="alert error">
+            Toto je vaše první přihlášení. Než budete pokračovat, změňte si prosím heslo.
+        </div>
+    {% endif %}
+
+    <form method="post" action="/account">
+        <div class="field-group">
+            <label for="username">Login</label>
+            <input id="username" name="username" value="{{ request.session.username }}" required>
+        </div>
+
+        <div class="field-group">
+            <label for="full_name">Jméno a příjmení</label>
+            <input id="full_name" name="full_name" value="{{ request.session.full_name }}" required>
+        </div>
+
+        <div class="field-group">
+            <label for="role">Role</label>
+
+            {% if request.session.role == "admin" %}
+                <div class="select-wrapper">
+                    <select id="role" name="role">
+                        <option value="user" {% if request.session.role == "user" %}selected{% endif %}>user</option>
+                        <option value="admin" {% if request.session.role == "admin" %}selected{% endif %}>admin</option>
+                    </select>
+                </div>
+            {% else %}
+                <input value="{{ request.session.role }}" disabled>
+                <input type="hidden" name="role" value="{{ request.session.role }}">
+            {% endif %}
+        </div>
+
+        <div class="field-group">
+            <label for="new_password">Nové heslo</label>
+            <input id="new_password" name="new_password" type="password">
+        </div>
+
+        <div class="field-group">
+            <label for="confirm_password">Potvrzení hesla</label>
+            <input id="confirm_password" name="confirm_password" type="password">
+        </div>
+
+        <div class="form-actions">
+            {% if not force_password %}
+                <a class="nav-button" href="/?open=settings">← Zpět</a>
+            {% endif %}
+
+            <button type="submit">Uložit</button>
+        </div>
+    </form>
+</section>
+{% endblock %}

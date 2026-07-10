@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="cs">
+<head>
+    <meta charset="utf-8">
+    <title>Tisk protokolu</title>
+    <style>
+        html, body {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+    </style>
+</head>
+<body>
+    <iframe id="pdf-frame" src="{{ pdf_url }}"></iframe>
+
+    <script>
+        const frame = document.getElementById("pdf-frame");
+
+        frame.addEventListener("load", () => {
+            setTimeout(() => {
+                frame.contentWindow.focus();
+                frame.contentWindow.print();
+            }, 500);
+        });
+    </script>
+</body>
+</html>

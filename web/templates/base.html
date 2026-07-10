@@ -4,37 +4,43 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ app_title }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}?v=theme7">
 </head>
-<body>
+
+<body class="theme-{{ theme }}">
     <main class="app-shell">
-<header class="titlebar">
 
-</header>
+        <header class="titlebar">
+        </header>
 
-        <section class="hero glow-card">
+{% if request.url.path != "/login"
+   and request.url.path != "/account"
+   and request.url.path != "/users"
+   and not request.url.path.startswith("/users/") %}
+    <section class="hero glow-card">
         {% if request.url.path == "/customers" %}
             <h1>Zákazníci</h1>
             <p>Správa zákazníků, serverů a adres.</p>
         {% else %}
-             <h1>Protocol Manager</h1>
-             <p>Rychlé vytváření předávacích protokolů</p>
+            <h1>Protocol Manager</h1>
+            <p>Rychlé vytváření předávacích protokolů</p>
         {% endif %}
 
-            <div class="hero-nav">
-                {% if request.url.path == "/customers" %}
-                    <a class="nav-button" href="/">Zpět</a>
-                {% else %}
-                    <button class="nav-button" type="button" onclick="resetProtocolForm()">Nový protokol</button>
-                    <button class="nav-button" type="button" onclick="document.querySelector('#settings-dialog').showModal()">Nastavení</button>
-                {% endif %}
-            </div>
-
-        </section>
+        <div class="hero-nav">
+            {% if request.url.path == "/customers" or request.url.path == "/preview" %}
+                <a class="nav-button" href="/?open=settings">← Zpět</a>
+            {% else %}
+                <button class="nav-button" type="button" onclick="resetProtocolForm()">Nový protokol</button>
+                <button class="nav-button" type="button" onclick="document.querySelector('#settings-dialog').showModal()">Nastavení</button>
+            {% endif %}
+        </div>
+    </section>
+{% endif %}
 
         {% block content %}{% endblock %}
 
     </main>
+
     <script>
 function resetProtocolForm() {
     const form = document.querySelector(".protocol-form");
@@ -58,6 +64,7 @@ function resetProtocolForm() {
 
     window.scrollTo({ top: 0, behavior: "smooth" });
 }
+
 function addItemRow() {
     const table = document.querySelector(".items-table");
     if (!table) return;
@@ -78,14 +85,9 @@ function removeItemRow(button) {
     const row = button.closest(".item-row");
     if (!row) return;
 
-    const rows = document.querySelectorAll(".item-row");
-    if (rows.length <= 1) {
-        row.querySelectorAll("input").forEach(input => input.value = "");
-        return;
-    }
-
     row.remove();
 }
-</script>
+    </script>
+
 </body>
 </html>

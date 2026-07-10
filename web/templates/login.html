@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="login-page">
+
+    <section class="login-card">
+
+        <div class="login-header">
+            <h1>Protocol Manager</h1>
+            <p>Přihlaste se ke správě předávacích protokolů.</p>
+        </div>
+
+        {% if error %}
+            <div class="status status-error">{{ error }}</div>
+        {% endif %}
+
+        <form method="post" action="/login" class="form-grid">
+
+            <label>
+                Uživatelské jméno
+                <input type="text" name="username" required autofocus>
+            </label>
+
+            <label>
+                Heslo
+                <input type="password" name="password" required>
+            </label>
+
+            <button class="primary-button" type="submit">
+                Přihlásit
+            </button>
+
+        </form>
+
+    </section>
+
+</div>
+{% endblock %}

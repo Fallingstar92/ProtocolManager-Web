@@ -7,10 +7,16 @@
             <p>{{ protocol.customer_name }} · {{ protocol.date }}{% if protocol.jira %} · Jira: {{ protocol.jira }}{% endif %}</p>
         </div>
         <div class="actions compact">
-            <a class="secondary-button" href="/">Zpět</a>
-            <a class="primary-button" href="{{ pdf_url }}" target="_blank">Otevřít / vytisknout PDF</a>
+            <a
+                class="primary-button"
+                href="/print/latest?protocol_number={{ protocol.protocol_number | urlencode }}"
+                target="_blank"
+            >
+                Vytisknout
+            </a>        
         </div>
     </div>
+    
     <iframe class="pdf-frame" src="{{ pdf_url }}" title="PDF náhled"></iframe>
 </section>
 {% endblock %}

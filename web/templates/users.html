@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="card account-card">
+
+    <div class="page-header">
+        <h2>Správa uživatelů</h2>
+        <hr class="section-divider">
+    </div>
+
+    <div class="admin-page-header">
+        <a class="secondary-button" href="/?open=settings">← Zpět</a>
+
+        <a class="primary-button" href="/users/new">
+            + Nový uživatel
+        </a>
+    </div>
+
+    <div class="users-list">
+        {% for user in users %}
+            <div class="user-card">
+                <div>
+                    <h3>{{ user.full_name }}</h3>
+                    <p>Login: <strong>{{ user.username }}</strong></p>
+                    <p>Role: <strong>{{ user.role }}</strong></p>
+                    <p>
+                        Stav:
+                        {% if user.active %}
+                            <strong>Aktivní</strong>
+                        {% else %}
+                            <strong>Neaktivní</strong>
+                        {% endif %}
+                    </p>
+                </div>
+
+                <a class="secondary-button" href="/users/{{ user.id }}">
+                    Upravit
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+
+</section>
+{% endblock %}

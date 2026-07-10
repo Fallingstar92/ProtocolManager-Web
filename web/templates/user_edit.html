@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="card account-card">
+    <div class="page-header-actions">
+        <h2>Upravit uživatele</h2>
+
+        <form method="post"
+              action="/users/{{ user.id }}/delete"
+              onsubmit="return confirm('Opravdu smazat tohoto uživatele?');">
+            <button class="danger-button" type="submit">
+                Smazat uživatele
+            </button>
+        </form>
+    </div>
+
+    <hr class="section-divider">
+
+    {% if error %}
+        <div class="alert error">{{ error }}</div>
+    {% endif %}
+
+    <form id="user-edit-form" method="post" action="/users/{{ user.id }}">
+        <div class="field-group">
+            <label>Login</label>
+            <input name="username" value="{{ user.username }}" required>
+        </div>
+
+        <div class="field-group">
+            <label>Jméno a příjmení</label>
+            <input name="full_name" value="{{ user.full_name }}" required>
+        </div>
+
+        <div class="field-group">
+            <label>Role</label>
+            <select name="role">
+                <option value="user" {% if user.role == "user" %}selected{% endif %}>user</option>
+                <option value="admin" {% if user.role == "admin" %}selected{% endif %}>admin</option>
+            </select>
+        </div>
+
+        <div class="field-group">
+            <div class="switch-row">
+                <span>Aktivní účet</span>
+
+                <label class="switch">
+                    <input type="checkbox"
+                           name="active"
+                           value="1"
+                           {% if user.active %}checked{% endif %}>
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <div class="field-group">
+            <label>Nové heslo</label>
+            <input name="new_password" type="password">
+        </div>
+
+        <div class="field-group">
+            <label>Potvrzení hesla</label>
+            <input name="confirm_password" type="password">
+        </div>
+
+        <div class="bottom-actions">
+            <a class="secondary-button" href="/users">← Zpět</a>
+
+            <button class="primary-button" type="submit">
+                Uložit
+            </button>
+        </div>
+    </form>
+</section>
+{% endblock %}
