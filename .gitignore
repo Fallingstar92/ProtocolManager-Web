@@ -1,4 +1,23 @@
-.venv/
+# Python
+__pycache__/
+*.pyc
+
+# Logs
+*.log
+
+# Backup files
+*.bak
+*.backup
+
+# SQLite backups
+*.db.backup
+
+# Windows metadata
+*:Zone.Identifier
+
+# IDE
+.vscode/
+.idea/.venv/
 __pycache__/
 *.py[cod]
 .vscode/
