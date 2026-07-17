@@ -394,9 +394,26 @@ input:focus {
     background: var(--bg-secondary);
 }
 
-.protocol-number {
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-text-fill-color: var(--text);
+    -webkit-box-shadow: 0 0 0 1000px var(--input) inset;
+    caret-color: var(--text);
+    transition: background-color 9999s ease-out 0s;
+}
+
+.items-table input:-webkit-autofill,
+.items-table input:-webkit-autofill:hover,
+.items-table input:-webkit-autofill:focus,
+.items-table input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px var(--panel-dark) inset;
+}
+
+.protocol-number-input {
     font-weight: 900;
-    color: var(--accent);
+    color: var(--text);
 }
 
 button, .primary-button, .secondary-button, .nav-button, .recent-button {
@@ -433,19 +450,36 @@ button:hover, .primary-button:hover, .secondary-button:hover, .nav-button:hover,
 
 .items-table {
     display: grid;
-    grid-template-columns: 1.1fr 2fr .55fr 120px;
+    grid-template-columns: 1.35fr 2fr .55fr 120px;
     border: 1px solid var(--border-strong);
     border-radius: 14px;
     overflow: hidden;
     background: var(--panel-dark);
 }
 
-.items-table input {
+.items-table input,
+.items-table select {
+    min-height: 46px;
     border-radius: 0;
     border: 0;
     border-top: 1px solid var(--border);
     border-right: 1px solid var(--border);
     background: var(--panel-dark);
+    color: var(--text);
+    padding: 10px 13px;
+    outline: none;
+    font-size: 14px;
+}
+
+.items-table .first-item-row > select,
+.items-table .first-item-row > input,
+.items-table .first-item-row > button {
+    border-top: 0;
+}
+
+.items-table select:focus {
+    border-color: var(--accent);
+    background: var(--bg-secondary);
 }
 
 .item-row {
@@ -471,6 +505,11 @@ button:hover, .primary-button:hover, .secondary-button:hover, .nav-button:hover,
     margin-top: 4px;
 }
 
+.clear-form-button {
+    justify-self: start;
+    margin-top: 10px;
+}
+
 .table-head {
     padding: 10px;
     background: var(--table-header);
@@ -486,6 +525,16 @@ button:hover, .primary-button:hover, .secondary-button:hover, .nav-button:hover,
 }
 
 .actions.compact { gap: 10px; }
+
+#settings-dialog .protocol-number-actions {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+#settings-dialog .protocol-number-actions .secondary-button:last-child {
+    margin-left: auto;
+}
 
 .preview-card {
     display: grid;
@@ -518,6 +567,11 @@ button:hover, .primary-button:hover, .secondary-button:hover, .nav-button:hover,
     box-shadow: var(--shadow);
 }
 
+#menu-dialog,
+#settings-dialog {
+    width: min(640px, calc(100% - 36px));
+}
+
 .settings-dialog::backdrop { background: rgba(0,0,0,.65); }
 
 .settings-form {
@@ -526,15 +580,32 @@ button:hover, .primary-button:hover, .secondary-button:hover, .nav-button:hover,
     padding: 24px;
 }
 
-.settings-form h2 { margin: 0; }
+.settings-form h2 {
+    margin: 0;
+}
+
+#menu-dialog .settings-form h2,
+#settings-dialog .settings-form h2 {
+    margin-bottom: 8px;
+    text-align: center;
+    font-size: 32px;
+    font-weight: 800;
+    line-height: 1.1;
+}
 
 #theme-dialog .actions.compact {
     position: sticky;
     bottom: -24px;
+    display: flex;
+    align-items: center;
+    width: 100%;
     margin-top: 8px;
     padding: 18px 0 0;
     background: linear-gradient(to top, var(--bg) 75%, transparent);
-    justify-content: end;
+}
+
+#theme-dialog .actions.compact .primary-button {
+    margin-left: auto;
 }
 
 .theme-picker-layout {
@@ -982,6 +1053,10 @@ button:hover, .primary-button:hover, .secondary-button:hover, .nav-button:hover,
     border: 1px solid var(--border);
     border-radius: 18px;
     background: var(--panel-dark);
+}
+
+.customer-existing-form[hidden] {
+    display: none;
 }
 
 .customer-add-form {
@@ -1521,6 +1596,25 @@ select:focus {
         inset 0 1px 2px rgba(0, 0, 0, .18);
 }
 
+.items-table select {
+    height: 46px;
+    min-height: 46px;
+    border-radius: 0;
+    border: 0;
+    border-top: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    background-color: var(--panel-dark);
+    background-position: right 13px center;
+    padding: 10px 40px 10px 13px;
+    box-shadow: none;
+}
+
+.items-table select:focus {
+    border-color: var(--accent);
+    background-color: var(--bg-secondary);
+    box-shadow: none;
+}
+
 .select-wrapper {
     position: relative;
 }
@@ -1543,4 +1637,1967 @@ select:focus {
 
 .select-wrapper select {
     padding-left: 48px;
+}
+
+.protocol-archive-card {
+    position: relative;
+    width: min(820px, 100%);
+    max-width: 820px;
+    margin: 32px auto;
+    padding: 28px;
+    background: #ffffff;
+    border: 1px solid #d5dde8;
+    border-radius: 12px;
+    box-shadow:
+        0 1px 2px rgba(15, 23, 42, .04),
+        0 8px 24px rgba(15, 23, 42, .07);
+}
+
+.archive-page-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.archive-page-header h2 {
+    margin: 0;
+    color: #1f2937;
+    font-size: 25px;
+    font-weight: 650;
+    letter-spacing: -.02em;
+}
+
+.archive-total {
+    margin: 7px 0 0;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.archive-total strong {
+    color: #334155;
+    font-weight: 650;
+}
+
+.protocol-archive-card .section-divider {
+    margin: 16px 0 24px;
+    border: 0;
+    border-top: 1px solid #d7e0eb;
+}
+
+.archive-search {
+    display: flex;
+    align-items: center;
+    width: 280px;
+    height: 40px;
+    padding: 0 11px;
+    border: 1px solid #c7d2df;
+    border-radius: 7px;
+    background: #ffffff;
+    color: #64748b;
+    transition:
+        border-color .15s ease,
+        box-shadow .15s ease;
+}
+
+.archive-search:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.archive-search svg {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 18px;
+    margin-right: 8px;
+    pointer-events: none;
+    fill: currentColor;
+}
+
+.archive-search input {
+    width: 100%;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: #1f2937;
+    font: inherit;
+    font-size: 14px;
+}
+
+.archive-search input::placeholder {
+    color: #94a3b8;
+}
+
+.protocol-year-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.protocol-year {
+    overflow: visible;
+    border: 1px solid #d4dde8;
+    border-radius: 9px;
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, .03);
+}
+
+.protocol-year summary {
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    cursor: pointer;
+    color: #27364a;
+    font-size: 17px;
+    font-weight: 650;
+    list-style: none;
+    user-select: none;
+}
+
+.protocol-year summary::-webkit-details-marker {
+    display: none;
+}
+
+.protocol-year summary::before {
+    content: "›";
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    margin-right: 7px;
+    color: #64748b;
+    font-size: 22px;
+    font-weight: 500;
+    line-height: 1;
+    transform: rotate(0deg);
+    transition: transform .15s ease;
+}
+
+.protocol-year[open] summary::before {
+    transform: rotate(90deg);
+}
+
+.protocol-year summary:hover {
+    background: #f3f6fa;
+}
+
+.protocol-year[open] summary {
+    background: #edf3f9;
+    border-bottom: 1px solid #d6e0eb;
+    color: #1d4ed8;
+}
+
+.protocol-year-title {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+}
+
+.protocol-year-count {
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.protocol-list {
+    display: flex;
+    flex-direction: column;
+    padding: 0 16px;
+}
+
+.protocol-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 54px;
+    border-bottom: 1px solid #e1e7ef;
+}
+
+.protocol-row:last-child {
+    border-bottom: 0;
+}
+
+.protocol-row[hidden] {
+    display: none;
+}
+
+.protocol-open {
+    display: flex;
+    align-items: center;
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 0 12px 0 4px;
+    color: #243244;
+    text-decoration: none;
+}
+
+.protocol-open:hover {
+    background: #f8fafc;
+}
+
+.protocol-number {
+    position: relative;
+    color: #243244;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.protocol-number:hover {
+    color: #2563eb;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.protocol-tooltip {
+    position: absolute;
+    z-index: 100;
+    top: 50%;
+    left: calc(100% + 16px);
+    display: none;
+    grid-template-columns: auto minmax(120px, 1fr);
+    gap: 6px 16px;
+    width: max-content;
+    min-width: 290px;
+    max-width: 430px;
+    padding: 14px 16px;
+    border: 1px solid #cbd6e3;
+    border-radius: 8px;
+    background: #ffffff;
+    box-shadow:
+        0 4px 10px rgba(15, 23, 42, .08),
+        0 16px 34px rgba(15, 23, 42, .10);
+    color: #263445;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.5;
+    text-decoration: none;
+    transform: translateY(-50%);
+}
+
+.protocol-tooltip::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 100%;
+    width: 10px;
+    height: 10px;
+    border-left: 1px solid #cbd6e3;
+    border-bottom: 1px solid #cbd6e3;
+    background: #ffffff;
+    transform: translate(5px, -50%) rotate(45deg);
+}
+
+.protocol-number:hover .protocol-tooltip {
+    display: grid;
+}
+
+.tooltip-label {
+    color: #64748b;
+    font-weight: 600;
+}
+
+.tooltip-value {
+    color: #1f2937;
+    font-weight: 500;
+    overflow-wrap: anywhere;
+}
+
+.protocol-reprint {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+    flex: 0 0 auto;
+    min-width: 76px;
+    height: 34px;
+    padding: 0 14px;
+    border: 1px solid #b8c6d7;
+    border-radius: 6px;
+    background: linear-gradient(180deg, #ffffff, #edf2f7);
+    color: #334155;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1;
+    text-decoration: none;
+    box-shadow: 0 1px 1px rgba(15, 23, 42, .04);
+}
+
+.protocol-reprint:hover {
+    border-color: #9eafc3;
+    background: #e4ebf4;
+    color: #1d4ed8;
+}
+
+.protocol-reprint:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+}
+
+.protocol-download {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+    flex: 0 0 auto;
+    width: 34px;
+    height: 34px;
+    margin-right: 2px;
+    border: 1px solid #b8c6d7;
+    border-radius: 6px;
+    background: linear-gradient(180deg, #ffffff, #edf2f7);
+    color: #475569;
+    text-decoration: none;
+    box-shadow: 0 1px 1px rgba(15, 23, 42, .04);
+}
+
+.protocol-download:hover {
+    border-color: #9eafc3;
+    background: #e4ebf4;
+    color: #1d4ed8;
+}
+
+.protocol-download:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+}
+
+.empty-state {
+    padding: 34px;
+    border: 1px dashed #c5d0de;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: #64748b;
+    text-align: center;
+}
+
+.page-back {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.page-back .nav-button {
+    min-width: auto;
+}
+
+.page-back .nav-button:last-child {
+    margin-left: auto;
+}
+
+/* ===== L1 WAREHOUSE ===== */
+
+.warehouse-page {
+    display: grid;
+    gap: 18px;
+}
+
+.warehouse-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+.warehouse-toolbar h2 {
+    margin: 0 0 5px;
+}
+
+.warehouse-toolbar p {
+    margin: 0;
+}
+
+.warehouse-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.muted-text {
+    color: var(--text-muted);
+}
+
+.button-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.compact-button {
+    min-height: 36px;
+    padding: 7px 12px;
+}
+
+.warehouse-table {
+    display: grid;
+    grid-template-columns:
+        minmax(220px, 1.8fr)
+        minmax(120px, .75fr)
+        90px
+        110px
+        150px;
+    border: 1px solid var(--border-strong);
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--panel);
+}
+
+.warehouse-history-table {
+    display: grid;
+    grid-template-columns:
+        minmax(150px, .9fr)
+        minmax(150px, 1fr)
+        minmax(85px, .5fr)
+        minmax(110px, .6fr)
+        minmax(150px, .9fr)
+        minmax(120px, .8fr)
+        minmax(120px, .8fr)
+        minmax(180px, 1.2fr);
+    border: 1px solid var(--border-strong);
+    border-radius: 14px;
+    overflow-x: auto;
+    background: var(--panel);
+}
+
+.warehouse-table-head {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    padding: 11px 12px;
+    background: var(--table-header);
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.warehouse-cell {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    min-height: 60px;
+    padding: 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--text);
+    overflow-wrap: anywhere;
+}
+
+.warehouse-number {
+    justify-content: flex-end;
+    text-align: right;
+}
+
+.warehouse-actions {
+    justify-content: center;
+}
+
+.warehouse-code {
+    display: inline-block;
+    padding: 3px 7px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: var(--panel-soft);
+    font-family: monospace;
+    font-size: 12px;
+}
+
+.warehouse-empty {
+    grid-column: 1 / -1;
+    padding: 24px;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.warehouse-dialog {
+    width: min(620px, calc(100% - 36px));
+}
+
+.warehouse-current-state {
+    padding: 13px 15px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--panel);
+}
+
+.warehouse-quantity-field {
+    width: 170px;
+    max-width: 100%;
+}
+
+.checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.checkbox-row input {
+    width: auto;
+}
+
+.status-message {
+    padding: 12px 15px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+}
+
+.success-message {
+    border-color: var(--accent-soft);
+    background: var(--panel-soft);
+}
+
+.error-message {
+    border-color: var(--danger-border);
+    background: var(--danger-bg);
+    color: var(--danger-text);
+}
+
+.positive-quantity {
+    color: var(--accent);
+}
+
+.negative-quantity {
+    color: var(--danger-text);
+}
+
+textarea {
+    width: 100%;
+    resize: vertical;
+}
+
+@media (max-width: 900px) {
+    .warehouse-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .warehouse-table {
+        grid-template-columns:
+            minmax(150px, 1.4fr)
+            minmax(110px, .8fr)
+            minmax(70px, .5fr)
+            minmax(70px, .5fr)
+            minmax(100px, .6fr);
+        overflow-x: auto;
+    }
+}
+
+.theme-dialog-actions {
+    width: 100%;
+}
+
+.theme-dialog-actions .primary-button {
+    margin-left: auto;
+}
+
+#protocol-number-dialog .protocol-number-actions {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+#protocol-number-dialog .protocol-number-actions .primary-button {
+    margin-left: auto;
+}
+
+.dialog-actions-split {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.dialog-actions-split .primary-button {
+    margin-left: auto;
+}
+
+.dialog-actions-split {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.dialog-actions-split .primary-button {
+    margin-left: auto;
+}
+
+/* Skryje šipku u input[list] */
+input[list]::-webkit-calendar-picker-indicator {
+    display: none !important;
+    opacity: 0;
+    pointer-events: none;
+}
+
+input[list] {
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.items-table select {
+    border-radius: 0 !important;
+    margin: 0 !important;
+}
+
+select.item-type-select {
+    height: 46px !important;
+    min-height: 46px !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    border: 0 !important;
+    border-top: 1px solid var(--border) !important;
+    border-right: 1px solid var(--border) !important;
+    padding: 10px 40px 10px 13px !important;
+    background-color: var(--panel-dark) !important;
+    box-shadow: none !important;
+}
+
+select.item-type-select:focus {
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+.item-type-dropdown {
+    position: relative;
+    min-width: 0;
+    background: var(--panel-dark);
+    border-top: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+}
+
+.item-type-trigger {
+    width: 100%;
+    min-height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 13px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 600;
+    text-align: left;
+
+    cursor: pointer;
+    transition: background .15s ease;
+}
+
+.item-type-trigger:hover {
+    background: var(--bg-secondary);
+}
+
+.item-type-dropdown.open .item-type-trigger {
+    background: var(--bg-secondary);
+}
+
+.item-type-arrow {
+    width: 8px;
+    height: 8px;
+    flex: 0 0 auto;
+
+    border-right: 2px solid var(--text-muted);
+    border-bottom: 2px solid var(--text-muted);
+
+    transform: rotate(45deg);
+    transition:
+        transform .18s ease,
+        border-color .18s ease;
+}
+
+.item-type-trigger:hover .item-type-arrow {
+    border-color: var(--accent);
+}
+
+.item-type-dropdown.open .item-type-arrow {
+    transform: rotate(225deg);
+    margin-top: 4px;
+}
+
+.item-type-menu {
+    position: absolute;
+    z-index: 1000;
+    top: calc(100% + 6px);
+    left: 8px;
+    right: 8px;
+    display: none;
+    overflow: hidden;
+    padding: 6px;
+    border: 1px solid var(--border-strong);
+    border-radius: 12px;
+    background: var(--panel);
+    box-shadow: var(--shadow);
+}
+
+.item-type-dropdown.open .item-type-menu {
+    display: grid;
+}
+
+.item-type-option {
+    width: 100%;
+    min-height: 38px;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 600;
+    text-align: left;
+}
+
+.item-type-option:hover {
+    background: var(--accent-soft);
+    color: var(--text);
+}
+
+.item-type-name {
+    font-weight: 600;
+}
+
+.item-type-option .item-type-code,
+.item-type-label .item-type-code {
+    margin-left: 0.5rem;
+    font-size: 0.88em;
+    font-weight: 400;
+    color: var(--text-muted);
+    opacity: 0.7;
+}
+
+.item-type-overlay {
+    position: fixed;
+    z-index: 10000;
+    display: grid;
+    gap: 4px;
+    max-height: 280px;
+    overflow-y: auto;
+    padding: 6px;
+    border: 1px solid var(--border-strong);
+    border-radius: 12px;
+    background: var(--panel);
+    box-shadow: var(--shadow);
+
+    opacity: 0;
+    transform: translateY(-6px);
+    transition:
+        opacity .12s ease,
+        transform .12s ease;
+}
+
+.item-type-overlay.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.item-type-overlay[hidden] {
+    display: none;
+}
+
+.item-type-overlay .item-type-option {
+    width: 100%;
+    min-height: 38px;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text);
+    text-align: left;
+}
+
+.item-type-overlay .item-type-option:hover {
+    background: var(--accent-soft);
+}
+
+.item-type-overlay .item-type-option.selected {
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.warehouse-edit-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.warehouse-edit-header h2 {
+    margin: 0;
+}
+
+.warehouse-edit-remove {
+    flex-shrink: 0;
+}
+
+.warehouse-edit-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+@media (max-width: 600px) {
+    .warehouse-edit-header {
+        align-items: flex-start;
+    }
+
+    .warehouse-edit-actions {
+        flex-wrap: wrap;
+    }
+
+    .warehouse-quantity-field {
+    width: 100%;
+    }
+}
+
+.warehouse-dialog-title {
+    text-align: center;
+    margin: 0 0 20px;
+}
+
+.warehouse-add-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.warehouse-history-row {
+    display: contents;
+}
+
+.warehouse-history-search {
+    width: min(360px, 100%);
+    flex-shrink: 0;
+}
+
+@media (max-width: 800px) {
+    .warehouse-history-search {
+        width: 100%;
+    }
+}
+
+.account-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.account-header h2 {
+    margin: 0;
+}
+
+.account-logout-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 8px 14px;
+    min-height: 38px;
+
+    text-decoration: none;
+    font-size: .95rem;
+    font-weight: 600;
+    border-radius: 10px;
+}
+
+.logout-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.form-dropdown {
+    position: relative;
+    width: 360px;
+    max-width: 100%;
+}
+
+.form-dropdown-trigger {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 16px 10px 48px;
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    background: var(--input);
+    color: var(--text);
+    font: inherit;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+    transition:
+        border-color .15s ease,
+        box-shadow .15s ease,
+        background .15s ease;
+}
+
+.form-dropdown-trigger:hover,
+.form-dropdown.open .form-dropdown-trigger {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.form-dropdown.open .item-type-arrow {
+    transform: rotate(225deg);
+    margin-top: 4px;
+}
+
+.form-dropdown-menu {
+    position: absolute;
+    z-index: 1000;
+    top: calc(100% + 7px);
+    left: 0;
+    right: 0;
+    display: grid;
+    gap: 4px;
+    padding: 6px;
+    border: 1px solid var(--border-strong);
+    border-radius: 14px;
+    background: var(--panel);
+    box-shadow: var(--shadow);
+    box-sizing: border-box;
+    position: absolute;
+}
+
+.form-dropdown-menu[hidden] {
+    display: none;
+}
+
+.form-dropdown-option {
+    width: 100%;
+    min-height: 38px;
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+}
+
+.form-dropdown-option:hover {
+    background: var(--accent-soft);
+}
+
+.form-dropdown-option.selected {
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.form-dropdown::before {
+    content: "";
+    position: absolute;
+    z-index: 2;
+    left: 18px;
+    top: 23px;
+    width: 18px;
+    height: 18px;
+    transform: translateY(-50%);
+    pointer-events: none;
+
+    background-repeat: no-repeat;
+    background-size: contain;
+
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2390FF3A' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M12 12a4 4 0 100-8 4 4 0 000 8zm0 2c-4.418 0-8 2.239-8 5v1h16v-1c0-2.761-3.582-5-8-5z'/%3E%3C/svg%3E");
+}
+
+.warehouse-operation-dropdown::before {
+    display: none;
+}
+
+.warehouse-operation-dropdown .form-dropdown-trigger {
+    padding-left: 16px;
+}
+
+.warehouse-remove-info {
+    margin: 1rem 0 1.5rem;
+    padding: 1rem 1.2rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--panel-soft);
+}
+
+.warehouse-remove-info p {
+    margin: 0 0 .8rem;
+}
+
+.warehouse-remove-info p:last-child {
+    margin-bottom: 0;
+}
+
+.warehouse-edit-quantity {
+    width: 160px;
+    max-width: 100%;
+}
+
+.warehouse-edit-quantity::-webkit-outer-spin-button,
+.warehouse-edit-quantity::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.warehouse-edit-quantity {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+.warning-text {
+    color: var(--danger-text);
+    font-weight: 600;
+}
+
+.warehouse-edit-quantity::-webkit-inner-spin-button,
+.warehouse-edit-quantity::-webkit-outer-spin-button {
+    opacity: .7;
+    margin: 0;
+    cursor: pointer;
+}
+
+/* ---------- Warehouse quantity stepper ---------- */
+
+.warehouse-quantity-stepper {
+    display: grid;
+    grid-template-columns: 32px 64px 32px;
+    align-items: center;
+    width: 128px;
+    height: 34px;
+    padding: 2px;
+    border: 1px solid rgba(118, 255, 3, 0.45);
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.04);
+    box-sizing: border-box;
+}
+
+.warehouse-quantity-stepper-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 7px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    font-size: 16px;
+    line-height: 1;
+    font-weight: 700;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease,
+        transform 0.1s ease;
+}
+
+.warehouse-quantity-stepper-button:hover {
+    background: rgba(118, 255, 3, 0.16);
+    border-color: rgba(118, 255, 3, 0.55);
+}
+
+.warehouse-quantity-stepper-button:active {
+    transform: scale(0.94);
+}
+
+.warehouse-quantity-stepper-input {
+    width: 64px;
+    height: 28px;
+    min-width: 0;
+    padding: 0 4px;
+    border: none;
+    background: transparent;
+    color: #ffffff;
+    text-align: center;
+    font-size: 15px;
+    line-height: 28px;
+    font-weight: 600;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.warehouse-quantity-stepper .warehouse-quantity-stepper-input:focus {
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    background: rgba(255, 255, 255, 0.04);
+}
+
+/* Schování nativních šipek */
+
+.warehouse-quantity-stepper-input::-webkit-outer-spin-button,
+.warehouse-quantity-stepper-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.warehouse-quantity-stepper-input {
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+#warehouse-edit-note {
+    width: 100%;
+    min-height: 72px;
+    padding: 8px 10px;
+    border: 1px solid rgba(118, 255, 3, 0.45);
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.04);
+    color: #ffffff;
+    font-size: 14px;
+    line-height: 1.35;
+    box-sizing: border-box;
+    resize: vertical;
+    outline: none;
+}
+
+#warehouse-edit-note::placeholder {
+    color: rgba(255, 255, 255, 0.55);
+}
+
+#warehouse-edit-note:focus {
+    border-color: rgba(118, 255, 3, 0.8);
+    box-shadow: 0 0 0 2px rgba(118, 255, 3, 0.12);
+}
+
+.warehouse-quantity-stepper .warehouse-quantity-stepper-input {
+    display: block;
+    width: 64px;
+    min-width: 0;
+    max-width: 64px;
+
+    height: 28px;
+    min-height: 28px;
+
+    margin: 0;
+    padding: 0 4px;
+
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+
+    background: transparent;
+    color: #ffffff;
+
+    text-align: center;
+    font-size: 15px;
+    line-height: 28px;
+    font-weight: 600;
+
+    outline: none;
+    box-sizing: border-box;
+}
+
+/* Warehouse quantity stepper final override */
+
+.warehouse-quantity-stepper {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    width: max-content;
+    height: 32px;
+    padding: 2px;
+    box-sizing: border-box;
+}
+
+.warehouse-quantity-stepper .warehouse-quantity-stepper-button,
+.warehouse-quantity-stepper .warehouse-quantity-stepper-input {
+    height: 26px !important;
+    min-height: 26px !important;
+    margin: 0 !important;
+    border-radius: 6px !important;
+    box-sizing: border-box;
+}
+
+.warehouse-quantity-stepper .warehouse-quantity-stepper-button {
+    width: 28px;
+    min-width: 28px;
+    padding: 0 !important;
+}
+
+.warehouse-quantity-stepper .warehouse-quantity-stepper-input {
+    width: 54px !important;
+    min-width: 54px !important;
+    max-width: 54px !important;
+    padding: 0 5px !important;
+    line-height: 24px !important;
+}
+
+.warehouse-current-state {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    width: max-content;
+    min-height: 32px;
+    padding: 5px 10px;
+
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.04);
+
+    box-sizing: border-box;
+}
+
+.warehouse-operation-dropdown {
+    width: 190px;
+    max-width: 100%;
+}
+
+.warehouse-operation-dropdown .form-dropdown-trigger {
+    width: 100%;
+}
+
+.warehouse-operation-dropdown .form-dropdown-menu {
+    width: 100%;
+}
+
+/* =========================================================
+   Warehouse edit dialog
+   ========================================================= */
+
+#warehouse-edit-dialog {
+    width: min(920px, calc(100vw - 40px));
+    max-width: 920px;
+    padding: 0;
+    border: 1px solid rgba(118, 255, 3, 0.72);
+    border-radius: 18px;
+    background:
+        linear-gradient(
+            145deg,
+            rgba(13, 20, 26, 0.99),
+            rgba(5, 10, 13, 0.99)
+        );
+    color: #ffffff;
+    box-shadow:
+        0 24px 80px rgba(0, 0, 0, 0.65),
+        0 0 24px rgba(118, 255, 3, 0.08);
+    overflow: visible;
+}
+
+#warehouse-edit-dialog::backdrop {
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(4px);
+}
+
+#warehouse-edit-dialog .warehouse-edit-form {
+    display: block;
+    width: 100%;
+    padding: 0;
+}
+
+/* Hlavička */
+
+#warehouse-edit-dialog .warehouse-edit-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+
+    margin: 0;
+    padding: 28px 38px;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+#warehouse-edit-dialog .warehouse-edit-heading {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    min-width: 0;
+}
+
+#warehouse-edit-dialog .warehouse-edit-heading-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex: 0 0 54px;
+    width: 54px;
+    height: 54px;
+
+    border: 1px solid rgba(118, 255, 3, 0.42);
+    border-radius: 13px;
+    background: rgba(118, 255, 3, 0.09);
+
+    color: var(--accent);
+    font-size: 30px;
+    line-height: 1;
+}
+
+#warehouse-edit-dialog #warehouse-edit-title {
+    margin: 0;
+
+    color: #ffffff;
+    font-size: clamp(28px, 4vw, 38px);
+    line-height: 1.1;
+    font-weight: 750;
+    letter-spacing: -0.03em;
+}
+
+#warehouse-edit-dialog .warehouse-edit-remove {
+    min-width: 142px;
+    min-height: 52px;
+    margin: 0;
+    padding: 0 22px;
+
+    border-radius: 13px;
+    font-size: 16px;
+}
+
+/* Obsah */
+
+#warehouse-edit-dialog .warehouse-edit-content {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+
+    width: 100%;
+    max-width: none;
+    margin: 0;
+
+    padding: 30px 38px 36px;
+}
+
+/* Aktuální stav */
+
+#warehouse-edit-dialog .warehouse-current-state {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+
+    width: 280px;      /* místo width:max-content */
+    margin: 0 auto;    /* <-- vycentruje celý blok */
+
+    padding: 16px 22px;
+
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    background: var(--panel-soft);
+}
+
+#warehouse-edit-dialog .warehouse-current-state-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 48px;
+    height: 48px;
+
+    color: var(--accent);
+    font-size: 35px;
+    line-height: 1;
+}
+
+#warehouse-edit-dialog .warehouse-current-state-content {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+#warehouse-edit-dialog .warehouse-current-state-content span {
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 16px;
+    font-weight: 500;
+}
+
+#warehouse-edit-dialog .warehouse-current-state-content strong {
+    color: var(--accent);
+    font-size: 29px;
+    line-height: 1.1;
+    font-weight: 800;
+}
+
+/* Typ změny a množství */
+
+#warehouse-edit-dialog .warehouse-edit-fields-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 1px minmax(0, 0.72fr);
+    gap: 30px;
+    align-items: end;
+}
+
+#warehouse-edit-dialog .warehouse-edit-fields-divider {
+    align-self: stretch;
+    width: 1px;
+    min-height: 104px;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+#warehouse-edit-dialog .field-group {
+    gap: 10px;
+    margin: 0;
+}
+
+#warehouse-edit-dialog .field-group > label {
+    color: #ffffff;
+    font-size: 18px;
+    line-height: 1.25;
+    font-weight: 700;
+}
+
+#warehouse-edit-dialog .warehouse-operation-dropdown {
+    width: 100%;
+    max-width: none;
+}
+
+#warehouse-edit-dialog
+    .warehouse-operation-dropdown
+    .form-dropdown-trigger {
+    width: 100%;
+    min-height: 58px;
+    padding: 0 20px;
+
+    border: 1px solid rgba(118, 255, 3, 0.7);
+    border-radius: 13px;
+    background: rgba(255, 255, 255, 0.025);
+
+    color: #ffffff;
+    font-size: 17px;
+    font-weight: 600;
+}
+
+#warehouse-edit-dialog
+    .warehouse-operation-dropdown
+    .form-dropdown-menu {
+    width: 100%;
+    min-width: 100%;
+    z-index: 30;
+}
+
+/* Stepper */
+
+#warehouse-edit-dialog .warehouse-quantity-stepper {
+    display: grid;
+    grid-template-columns: 64px minmax(72px, 1fr) 64px;
+    gap: 0;
+
+    width: 100%;
+    height: 58px;
+    padding: 0;
+
+    border: 1px solid rgba(118, 255, 3, 0.7);
+    border-radius: 13px;
+    background: rgba(255, 255, 255, 0.025);
+
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+#warehouse-edit-dialog .warehouse-quantity-stepper-button,
+#warehouse-edit-dialog .warehouse-quantity-stepper-input {
+    width: 100% !important;
+    height: 56px !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    min-height: 56px !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+
+    box-sizing: border-box;
+}
+
+#warehouse-edit-dialog .warehouse-quantity-stepper-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(255, 255, 255, 0.055) !important;
+    color: #ffffff;
+
+    font-size: 30px;
+    line-height: 1;
+    font-weight: 400;
+
+    cursor: pointer;
+}
+
+#warehouse-edit-dialog
+    .warehouse-quantity-stepper-button:first-child {
+    border-right: 1px solid rgba(255, 255, 255, 0.13) !important;
+}
+
+#warehouse-edit-dialog
+    .warehouse-quantity-stepper-button:last-child {
+    border-left: 1px solid rgba(255, 255, 255, 0.13) !important;
+}
+
+#warehouse-edit-dialog .warehouse-quantity-stepper-button:hover {
+    background: rgba(118, 255, 3, 0.14) !important;
+}
+
+#warehouse-edit-dialog .warehouse-quantity-stepper-button:active {
+    transform: none;
+    background: rgba(118, 255, 3, 0.22) !important;
+}
+
+#warehouse-edit-dialog .warehouse-quantity-stepper-input {
+    appearance: textfield;
+    -moz-appearance: textfield;
+
+    background: transparent !important;
+    color: #ffffff;
+
+    text-align: center;
+    font-size: 24px;
+    line-height: 56px !important;
+    font-weight: 600;
+
+    outline: none;
+}
+
+#warehouse-edit-dialog
+    .warehouse-quantity-stepper-input::-webkit-inner-spin-button,
+#warehouse-edit-dialog
+    .warehouse-quantity-stepper-input::-webkit-outer-spin-button {
+    margin: 0;
+    -webkit-appearance: none;
+}
+
+/* Poznámka */
+
+#warehouse-edit-dialog .warehouse-note-field {
+    width: 100%;
+}
+
+#warehouse-edit-dialog .warehouse-note-optional {
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 15px;
+    font-weight: 400;
+}
+
+#warehouse-edit-dialog #warehouse-edit-note {
+    width: 100%;
+    min-height: 132px;
+    padding: 18px 20px;
+
+    border: 1px solid rgba(118, 255, 3, 0.7);
+    border-radius: 13px;
+    background: rgba(255, 255, 255, 0.025);
+
+    color: #ffffff;
+    font-size: 16px;
+    line-height: 1.45;
+
+    outline: none;
+    resize: vertical;
+    box-sizing: border-box;
+}
+
+#warehouse-edit-dialog #warehouse-edit-note::placeholder {
+    color: rgba(255, 255, 255, 0.45);
+}
+
+#warehouse-edit-dialog #warehouse-edit-note:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(118, 255, 3, 0.1);
+}
+
+/* Spodní část */
+
+#warehouse-edit-dialog .warehouse-edit-footer {
+    padding: 26px 38px 30px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+#warehouse-edit-dialog .warehouse-edit-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+
+    margin: 0;
+}
+
+#warehouse-edit-dialog .warehouse-edit-actions button {
+    min-height: 52px;
+    margin: 0;
+    border-radius: 13px;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+#warehouse-edit-dialog
+    .warehouse-edit-actions
+    .secondary-button {
+    min-width: 132px;
+}
+
+#warehouse-edit-dialog
+    .warehouse-edit-actions
+    .primary-button {
+    min-width: 186px;
+}
+
+/* Menší obrazovky */
+
+@media (max-width: 720px) {
+    #warehouse-edit-dialog {
+        width: calc(100vw - 24px);
+    }
+
+    #warehouse-edit-dialog .warehouse-edit-header {
+        align-items: flex-start;
+        padding: 22px;
+    }
+
+    #warehouse-edit-dialog .warehouse-edit-heading-icon {
+        display: none;
+    }
+
+    #warehouse-edit-dialog #warehouse-edit-title {
+        font-size: 27px;
+    }
+
+    #warehouse-edit-dialog .warehouse-edit-remove {
+        min-width: auto;
+        min-height: 44px;
+        padding: 0 15px;
+    }
+
+    #warehouse-edit-dialog .warehouse-edit-content {
+        gap: 24px;
+        padding: 24px 22px 28px;
+    }
+
+    #warehouse-edit-dialog .warehouse-edit-fields-row {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    #warehouse-edit-dialog .warehouse-edit-fields-divider {
+        display: none;
+    }
+
+    #warehouse-edit-dialog .warehouse-current-state {
+        min-width: 0;
+        width: 100%;
+    }
+
+    #warehouse-edit-dialog .warehouse-edit-footer {
+        padding: 22px;
+    }
+
+    #warehouse-edit-dialog .warehouse-edit-actions {
+        flex-wrap: wrap;
+    }
+}
+
+/* =========================================================
+   Warehouse edit dialog – theme-aware colors
+   ========================================================= */
+
+#warehouse-edit-dialog {
+    border-color: var(--border-strong);
+    background: var(--panel);
+    color: var(--text);
+    box-shadow: var(--shadow);
+}
+
+#warehouse-edit-dialog::backdrop {
+    background: rgba(0, 0, 0, 0.65);
+}
+
+#warehouse-edit-dialog .warehouse-edit-header,
+#warehouse-edit-dialog .warehouse-edit-footer {
+    border-color: var(--border);
+}
+
+#warehouse-edit-dialog #warehouse-edit-title {
+    color: var(--text);
+}
+
+#warehouse-edit-dialog .warehouse-edit-heading-icon {
+    border-color: var(--accent-soft);
+    background: var(--panel-soft);
+    color: var(--accent);
+}
+
+/* Aktuální stav */
+
+#warehouse-edit-dialog .warehouse-current-state {
+    border-color: var(--border);
+    background: var(--panel-soft);
+    color: var(--text);
+}
+
+#warehouse-edit-dialog .warehouse-current-state-icon {
+    color: var(--accent);
+}
+
+#warehouse-edit-dialog .warehouse-current-state-content span {
+    color: var(--text-muted);
+}
+
+#warehouse-edit-dialog .warehouse-current-state-content strong {
+    color: var(--accent);
+}
+
+/* Popisky */
+
+#warehouse-edit-dialog .field-group > label {
+    color: var(--text);
+}
+
+#warehouse-edit-dialog .warehouse-note-optional {
+    color: var(--text-muted);
+}
+
+/* Oddělovač mezi poli */
+
+#warehouse-edit-dialog .warehouse-edit-fields-divider {
+    background: var(--border);
+}
+
+/* Dropdown */
+
+#warehouse-edit-dialog
+    .warehouse-operation-dropdown
+    .form-dropdown-trigger {
+    border-color: var(--border-strong);
+    background: var(--input);
+    color: var(--text);
+}
+
+#warehouse-edit-dialog
+    .warehouse-operation-dropdown
+    .form-dropdown-trigger:hover,
+#warehouse-edit-dialog
+    .warehouse-operation-dropdown
+    .form-dropdown-trigger:focus {
+    border-color: var(--accent);
+    background: var(--panel-soft);
+}
+
+#warehouse-edit-dialog
+    .warehouse-operation-dropdown
+    .form-dropdown-menu {
+    border-color: var(--border);
+    background: var(--panel);
+    color: var(--text);
+}
+
+#warehouse-edit-dialog
+    .warehouse-operation-dropdown
+    .form-dropdown-option {
+    background: var(--panel);
+    color: var(--text);
+}
+
+#warehouse-edit-dialog
+    .warehouse-operation-dropdown
+    .form-dropdown-option:hover,
+#warehouse-edit-dialog
+    .warehouse-operation-dropdown
+    .form-dropdown-option.selected {
+    background: var(--accent-soft);
+    color: var(--text);
+}
+
+/* Množství */
+
+#warehouse-edit-dialog .warehouse-quantity-stepper {
+    border-color: var(--border-strong);
+    background: var(--input);
+}
+
+#warehouse-edit-dialog .warehouse-quantity-stepper-button {
+    background: var(--panel-soft) !important;
+    color: var(--text);
+}
+
+#warehouse-edit-dialog
+    .warehouse-quantity-stepper-button:first-child {
+    border-right-color: var(--border) !important;
+}
+
+#warehouse-edit-dialog
+    .warehouse-quantity-stepper-button:last-child {
+    border-left-color: var(--border) !important;
+}
+
+#warehouse-edit-dialog .warehouse-quantity-stepper-button:hover {
+    background: var(--accent-soft) !important;
+    color: var(--accent);
+}
+
+#warehouse-edit-dialog .warehouse-quantity-stepper-button:active {
+    background: var(--accent-soft) !important;
+}
+
+#warehouse-edit-dialog .warehouse-quantity-stepper-input {
+    background: var(--input) !important;
+    color: var(--text);
+}
+
+/* Poznámka */
+
+#warehouse-edit-dialog #warehouse-edit-note {
+    border-color: var(--border-strong);
+    background: var(--input);
+    color: var(--text);
+}
+
+#warehouse-edit-dialog #warehouse-edit-note::placeholder {
+    color: var(--text-muted);
+}
+
+#warehouse-edit-dialog #warehouse-edit-note:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-soft);
+}
+/* Zarovnání formulářových polí v editaci skladu */
+#warehouse-edit-dialog .warehouse-edit-fields-row,
+#warehouse-edit-dialog .warehouse-note-field {
+    width: 100%;
+    max-width: 760px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Ochrana stepperu proti ořezání pravého + tlačítka */
+#warehouse-edit-dialog .warehouse-quantity-field {
+    min-width: 0;
+}
+
+#warehouse-edit-dialog .warehouse-quantity-stepper {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+}
+
+#warehouse-edit-dialog .warehouse-quantity-stepper-input {
+    flex: 1 1 auto;
+    width: 0;
+    min-width: 0;
+}
+
+#warehouse-edit-dialog .warehouse-quantity-stepper-button {
+    flex: 0 0 48px;
+    width: 48px;
+    min-width: 48px;
+}
+
+#warehouse-edit-dialog .warehouse-quantity-stepper-button-plus {
+    flex-shrink: 0;
+}
+
+/* Malý stepper počtu položek na hlavní stránce */
+.item-quantity-stepper {
+    display: flex;
+    align-items: stretch;
+    align-self: stretch;
+
+    width: 100%;
+    min-width: 0;
+    min-height: 46px;
+    height: auto;
+
+    margin: 0;
+    overflow: hidden;
+
+    border: 0;
+    border-top: 1px solid var(--border);
+    border-radius: 0;
+    background: var(--input);
+}
+
+
+.item-quantity-stepper-button {
+    display: grid;
+    place-items: center;
+
+    flex: 0 0 46px;
+
+    width: 46px;
+    min-width: 46px;
+    min-height: 46px;
+    padding: 0;
+
+    border: 0;
+    border-radius: 0;
+
+    background: var(--panel-soft);
+    color: var(--text);
+
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1;
+
+    cursor: pointer;
+}
+
+.item-quantity-stepper-button:first-child {
+    border-right: 1px solid var(--border);
+}
+
+.item-quantity-stepper-button:last-child {
+    border-left: 1px solid var(--border);
+}
+
+.item-quantity-stepper-button:hover {
+    background: var(--accent-soft);
+    color: var(--accent);
+}
+
+.item-quantity-stepper-button:active {
+    transform: none;
+    background: var(--panel-dark);
+}
+
+.item-quantity-stepper-input {
+    flex: 1 1 auto;
+
+    width: 0;
+    min-width: 0;
+    height: 100%;
+    padding: 0 8px;
+
+    border: 0;
+    border-radius: 0;
+    outline: 0;
+    box-shadow: none;
+
+    background: transparent;
+    color: var(--text);
+
+    text-align: center;
+    font: inherit;
+    font-weight: 700;
+
+    appearance: textfield;
+}
+
+.item-quantity-stepper-input:focus {
+    border: 0;
+    outline: 0;
+    box-shadow: none;
+}
+
+.item-quantity-stepper-input::-webkit-inner-spin-button,
+.item-quantity-stepper-input::-webkit-outer-spin-button {
+    margin: 0;
+    appearance: none;
 }

@@ -1,0 +1,375 @@
+<dialog id="menu-dialog" class="settings-dialog">
+    <div class="settings-form">
+        <h2>Menu</h2>
+
+        {% if request.session.role != "accounting" %}
+        <a class="primary-button settings-link-button" href="/">
+            Hlavní strana
+        </a>
+        {% endif %}
+
+        <a class="primary-button settings-link-button" href="/l1-warehouse">
+            L1 Sklad
+        </a>
+
+        <a class="primary-button settings-link-button" href="/protocols">
+            Protokoly
+        </a>
+
+        <button
+            class="primary-button settings-link-button"
+            type="button"
+            onclick="
+                document.querySelector('#menu-dialog').close();
+                document.querySelector('#settings-dialog').showModal();
+            "
+        >
+            Nastavení
+        </button>
+
+        <div class="actions compact protocol-number-actions">
+            <button
+                class="secondary-button"
+                type="button"
+                onclick="document.querySelector('#menu-dialog').close()"
+            >
+                Zavřít
+            </button>
+        </div>
+    </div>
+</dialog>
+
+<dialog id="settings-dialog" class="settings-dialog">
+    <div class="settings-form">
+        <h2>Nastavení</h2>
+
+        <a class="primary-button settings-link-button" href="/account?from=settings">
+            Můj účet
+        </a>
+
+        {% if request.session.role != "accounting" %}
+        <a class="primary-button settings-link-button" href="/customers?from=settings">
+            Správa zákazníků
+        </a>
+
+        <button
+            class="primary-button settings-link-button"
+            type="button"
+            onclick="
+                document.querySelector('#settings-dialog').close();
+                document.querySelector('#protocol-number-dialog').showModal();
+            "
+        >
+            Změnit číslo protokolu
+        </button>
+
+        <button
+            class="primary-button settings-link-button"
+            type="button"
+            onclick="
+                document.querySelector('#settings-dialog').close();
+                document.querySelector('#theme-dialog').showModal();
+            "
+        >
+            Změnit vzhled
+        </button>
+        {% endif %}
+
+{% if request.session.role == "admin" %}
+<a class="primary-button settings-link-button" href="/users?from=settings">
+    Správa uživatelů
+</a>
+
+<a class="primary-button settings-link-button" href="/audit-log">
+    Audit log
+</a>
+{% endif %}
+
+        <div class="actions compact protocol-number-actions">
+            <button
+                class="secondary-button"
+                type="button"
+                onclick="
+                    document.querySelector('#settings-dialog').close();
+                    document.querySelector('#menu-dialog').showModal();
+                "
+            >
+                ← Zpět
+            </button>
+
+            <button
+                class="secondary-button"
+                type="button"
+                onclick="document.querySelector('#settings-dialog').close()"
+            >
+                Zavřít
+            </button>
+        </div>
+    </div>
+</dialog>
+
+<dialog id="protocol-number-dialog" class="settings-dialog">
+    <form
+        action="/settings/protocol-number"
+        method="post"
+        class="settings-form"
+    >
+        <h2>Změnit číslo protokolu</h2>
+
+        <div class="field-group wide">
+            <label for="manual-protocol-number">
+                Číslo protokolu
+            </label>
+
+            <input
+                id="manual-protocol-number"
+                name="protocol_number"
+                value="{{ protocol_number }}"
+                required
+                autocomplete="off"
+            >
+        </div>
+
+        <div class="actions compact dialog-actions-split">
+            <button
+                class="secondary-button"
+                type="button"
+                onclick="
+                    document.querySelector('#protocol-number-dialog').close();
+                    document.querySelector('#settings-dialog').showModal();
+                "
+            >
+                ← Zpět
+            </button>
+
+            <button class="primary-button" type="submit">
+                Uložit
+            </button>
+        </div>
+    </form>
+</dialog>
+
+<dialog id="theme-dialog" class="settings-dialog">
+    <form action="/theme" method="post" class="settings-form">
+        <input
+    type="hidden"
+    name="return_to"
+    value="{{ request.url.path }}"
+>
+        <h2>Změnit vzhled</h2>
+
+        <label>Motiv aplikace</label>
+
+<div class="theme-picker-layout">
+    <div class="theme-list">
+        {% set themes = [
+            ("light", "Light Office", "Windows 11 / Office styl", "Výchozí"),
+            ("poison", "Poison Green", "Toxic, svěží a energický", ""),
+            ("ocean", "Ocean Blue", "Azure / GitHub Enterprise", ""),
+            ("purple", "Purple Night", "JetBrains / Discord Nitro", ""),
+            ("casino", "Totally not Apollo", "Cyberpunk casino neon", ""),
+            ("carbon", "Dark Carbon", "Minimalistický grafit", "")
+        ] %}
+
+        {% for value, title, description, badge in themes %}
+        <label class="theme-option theme-scope theme-preview-{{ value }} {% if theme == value %}active{% endif %}">
+            <input type="radio" name="theme" value="{{ value }}" {% if theme == value %}checked{% endif %}>
+
+            <div class="theme-option-text">
+                <strong>{{ title }}</strong>
+                <small>{{ description }}</small>
+                {% if badge %}
+                    <span class="theme-badge">{{ badge }}</span>
+                {% endif %}
+            </div>
+        </label>
+        {% endfor %}
+    </div>
+
+    <div class="theme-live-preview">
+    <div id="theme-preview" class="theme-window preview-{{ theme }}">
+
+        <div class="theme-window-titlebar">
+            <div class="theme-window-brand">
+                <span class="theme-window-icon"></span>
+                <strong>Protocol Manager</strong>
+            </div>
+
+            <span class="theme-window-controls">− □ ×</span>
+        </div>
+
+<div class="theme-window-hero">
+
+    <h3>Předávací protokoly</h3>
+    <p>Rychlé vytvoření a tisk protokolu</p>
+</div>
+
+        <div class="theme-window-nav">
+            <span>Nový protokol</span>
+            <span>Historie</span>
+            <span>Nastavení</span>
+        </div>
+
+        <div class="theme-window-form">
+            <div>
+                <label>Zákazník</label>
+                <span>Tipsport</span>
+            </div>
+
+            <div>
+                <label>Jira ticket</label>
+                <span>GMS-12345</span>
+            </div>
+        </div>
+
+        <div class="theme-window-table">
+            <div>Druh</div>
+            <div>Popis</div>
+            <div>Ks</div>
+            <div>Akce</div>
+
+            <span>Flash</span>
+            <span>VPN 001</span>
+            <span>1</span>
+            <span>×</span>
+        </div>
+
+    </div>
+
+</div>
+
+</div>
+        <div class="actions compact theme-dialog-actions">
+    <button
+        class="secondary-button"
+        type="button"
+        onclick="
+            document.querySelector('#theme-dialog').close();
+            document.querySelector('#settings-dialog').showModal();
+        "
+    >
+        ← Zpět
+    </button>
+
+    <button class="primary-button" type="submit">
+        Uložit vzhled
+    </button>
+</div>
+    </form>
+</dialog>
+<script>
+function selectRecentCustomer(button, customerName) {
+    const input = document.querySelector('[name="customer_name"]');
+
+    input.value = customerName;
+
+    input.dispatchEvent(
+        new Event("input", { bubbles: true })
+    );
+
+    document.querySelectorAll(".recent-button").forEach((item) => {
+        item.classList.remove("active");
+    });
+}
+
+function confirmCustomerInput(event) {
+    if (event.key !== "Enter") {
+        return;
+    }
+
+    event.preventDefault();
+
+    const customerInput = event.target;
+    customerInput.blur();
+
+    customerInput.dispatchEvent(
+       new Event("input", { bubbles: true })
+    );
+
+    saveProtocolDraftImmediately();
+
+    document.querySelectorAll('.recent-button').forEach((button) => {
+        button.classList.remove('active');
+
+        if (button.textContent.trim() === customerInput.value.trim()) {
+        }
+    });
+}
+function updateThemePreview(selectedTheme) {
+    const preview = document.querySelector('#theme-preview');
+
+    if (preview) {
+        preview.className = `theme-window preview-${selectedTheme}`;
+    }
+
+    document.querySelectorAll('.theme-option').forEach((option) => {
+        const input = option.querySelector('input[name="theme"]');
+        option.classList.toggle('active', input && input.value === selectedTheme);
+    });
+}
+
+function applyThemeToPage(themeName) {
+    document.body.classList.remove(
+        "theme-light",
+        "theme-poison",
+        "theme-ocean",
+        "theme-purple",
+        "theme-casino",
+        "theme-carbon"
+    );
+
+    document.body.classList.add(`theme-${themeName}`);
+}
+
+document.querySelectorAll(
+    '#theme-dialog input[name="theme"]'
+).forEach((radio) => {
+    radio.addEventListener("change", () => {
+        updateThemePreview(radio.value);
+    });
+});
+
+const params = new URLSearchParams(window.location.search);
+
+function removeOneShotParameter(name) {
+    if (!params.has(name)) {
+        return;
+    }
+
+    const cleanUrl = new URL(window.location.href);
+
+    cleanUrl.searchParams.delete(name);
+
+    window.history.replaceState(
+        {},
+        "",
+        cleanUrl.pathname +
+        cleanUrl.search +
+        cleanUrl.hash
+    );
+}
+
+if (params.get("open") === "settings") {
+    document
+        .querySelector("#settings-dialog")
+        ?.showModal();
+}
+
+removeOneShotParameter("open");
+removeOneShotParameter("reset");
+removeOneShotParameter("saved");
+removeOneShotParameter("theme_saved");
+
+if (params.get("reset") === "1") {
+    const cleanUrl = new URL(window.location.href);
+
+    cleanUrl.searchParams.delete("reset");
+
+    window.history.replaceState(
+        {},
+        "",
+        cleanUrl.pathname + cleanUrl.search + cleanUrl.hash
+    );
+}
+
+</script>

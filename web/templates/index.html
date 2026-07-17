@@ -53,7 +53,13 @@
 
         <div class="field-group wide">
             <label>Číslo protokolu</label>
-            <input name="protocol_number" class="protocol-number" value="{{ protocol_number }}" required>
+            <input
+            name="protocol_number"
+            class="protocol-number-input"
+            value="{{ protocol_number }}"
+            readonly
+            required
+>
         </div>
 
         <div class="field-group">
@@ -72,16 +78,103 @@
 
     {% set item_count_total = draft_items|length if draft_items else 1 %}
     {% for i in range(item_count_total) %}
-    <div class="item-row">
-        <input name="item_type" value="{{ draft_items[i] if draft_items|length > i else '' }}" placeholder="Flash / Chip / Univerzální flash">
+    <div class="item-row{% if loop.first %} first-item-row{% endif %}">
+{% set selected_item_type = draft_items[i] if draft_items|length > i else '' %}
+{% set selected_item_key = selected_item_type|string|trim|lower %}
+{% set selected_item = protocol_item_by_code.get(selected_item_key) if selected_item_key else none %}
+
+<div class="item-type-dropdown">
+    <input
+        class="item-type-value"
+        name="item_type"
+        type="hidden"
+        value="{{ selected_item_type }}"
+        required
+    >
+
+    <button
+        class="item-type-trigger"
+        type="button"
+        onclick="toggleItemTypeDropdown(this)"
+    >
+<span class="item-type-label">
+    {% if selected_item %}
+        <span class="item-type-name">{{ selected_item.name }}</span>
+        {% if selected_item.show_code %}
+            <span class="item-type-code">({{ selected_item.code }})</span>
+        {% endif %}
+    {% elif selected_item_type %}
+        {{ selected_item_type }}
+    {% else %}
+        Vyber artikl
+    {% endif %}
+</span>
+        <span class="item-type-arrow"></span>
+    </button>
+
+    <div class="item-type-menu">
+        {% for item in protocol_items %}
+<button
+    class="item-type-option"
+    type="button"
+    data-value="{{ item.code }}"
+    data-name="{{ item.name }}"
+    data-code="{{ item.code }}"
+    data-show-code="{{ '1' if item.show_code else '0' }}"
+    onclick="selectItemType(this)"
+>
+    <span class="item-type-name">{{ item.name }}</span>
+    {% if item.show_code %}
+        <span class="item-type-code">({{ item.code }})</span>
+    {% endif %}
+</button>
+        {% endfor %}
+    </div>
+</div>
         <input name="item_value" value="{{ draft_item_values[i] if draft_item_values|length > i else '' }}" placeholder="Sériové číslo nebo poznámka">
-        <input name="item_count" value="{{ draft_item_counts[i] if draft_item_counts|length > i else '' }}" placeholder="Počet">
+        <div class="item-quantity-stepper">
+    <button
+        class="item-quantity-stepper-button"
+        type="button"
+        aria-label="Snížit počet"
+        onclick="itemQuantityStep(this, -1)"
+    >
+        −
+    </button>
+
+    <input
+        class="item-quantity-stepper-input"
+        name="item_count"
+        type="number"
+        min="0"
+        step="1"
+        value="{{ draft_item_counts[i] if draft_item_counts|length > i else '' }}"
+        placeholder="Počet"
+    >
+
+    <button
+        class="item-quantity-stepper-button"
+        type="button"
+        aria-label="Zvýšit počet"
+        onclick="itemQuantityStep(this, 1)"
+    >
+        +
+    </button>
+</div>
         <button class="remove-item-button" type="button" onclick="removeItemRow(this)">Smazat</button>
     </div>
     {% endfor %}
 </div>
 
 <button class="secondary-button add-item-button" type="button" onclick="addItemRow()">+ Přidat položku</button>
+
+<button
+    class="secondary-button clear-form-button"
+    type="button"
+    onclick="resetProtocolForm()"
+>
+    Vymazat nastavení
+</button>
     </section>
 
 <section class="actions">
@@ -89,189 +182,346 @@
 </section>
 </form>
 
-<dialog id="settings-dialog" class="settings-dialog">
-    <div class="settings-form">
-        <h2>Nastavení</h2>
-        <a class="primary-button settings-link-button" href="/customers?from=settings">
-            Správa zákazníků
-        </a>
-
-        <button
-            class="primary-button settings-link-button"
-            type="button"
-            onclick="document.querySelector('#theme-dialog').showModal()"
-        >
-            Změnit vzhled
-        </button>
-
-        <a class="primary-button settings-link-button" href="/account?from=settings">
-            Můj účet
-        </a>
-
-        {% if request.session.role == "admin" %}
-        <a class="primary-button settings-link-button" href="/users?from=settings">
-            Správa uživatelů
-        </a>
-        {% endif %}
-
-        <div class="actions compact">
-            <button class="secondary-button" type="button" onclick="document.querySelector('#settings-dialog').close()">Zavřít</button>
-        </div>
-    </div>
-</dialog>
-<dialog id="theme-dialog" class="settings-dialog">
-    <form action="/theme" method="post" class="settings-form">
-        <h2>Změnit vzhled</h2>
-
-        <label>Motiv aplikace</label>
-
-<div class="theme-picker-layout">
-    <div class="theme-list">
-        {% set themes = [
-            ("light", "Light Office", "Windows 11 / Office styl", "Výchozí"),
-            ("poison", "Poison Green", "Toxic, svěží a energický", ""),
-            ("ocean", "Ocean Blue", "Azure / GitHub Enterprise", ""),
-            ("purple", "Purple Night", "JetBrains / Discord Nitro", ""),
-            ("casino", "Totally not Apollo", "Cyberpunk casino neon", ""),
-            ("carbon", "Dark Carbon", "Minimalistický grafit", "")
-        ] %}
-
-        {% for value, title, description, badge in themes %}
-        <label class="theme-option theme-scope theme-preview-{{ value }} {% if theme == value %}active{% endif %}">
-            <input type="radio" name="theme" value="{{ value }}" {% if theme == value %}checked{% endif %}>
-
-            <div class="theme-option-text">
-                <strong>{{ title }}</strong>
-                <small>{{ description }}</small>
-                {% if badge %}
-                    <span class="theme-badge">{{ badge }}</span>
-                {% endif %}
-            </div>
-        </label>
-        {% endfor %}
-    </div>
-
-    <div class="theme-live-preview">
-    <div id="theme-preview" class="theme-window preview-{{ theme }}">
-
-        <div class="theme-window-titlebar">
-            <div class="theme-window-brand">
-                <span class="theme-window-icon"></span>
-                <strong>Protocol Manager</strong>
-            </div>
-
-            <span class="theme-window-controls">− □ ×</span>
-        </div>
-
-<div class="theme-window-hero">
-
-    <h3>Předávací protokoly</h3>
-    <p>Rychlé vytvoření a tisk protokolu</p>
-</div>
-
-        <div class="theme-window-nav">
-            <span>Nový protokol</span>
-            <span>Historie</span>
-            <span>Nastavení</span>
-        </div>
-
-        <div class="theme-window-form">
-            <div>
-                <label>Zákazník</label>
-                <span>Tipsport</span>
-            </div>
-
-            <div>
-                <label>Jira ticket</label>
-                <span>GMS-12345</span>
-            </div>
-        </div>
-
-        <div class="theme-window-table">
-            <div>Druh</div>
-            <div>Popis</div>
-            <div>Ks</div>
-            <div>Akce</div>
-
-            <span>Flash</span>
-            <span>VPN 001</span>
-            <span>1</span>
-            <span>×</span>
-        </div>
-
-    </div>
-
-</div>
-        <div class="actions compact">
-            <button class="secondary-button" type="button" onclick="window.location.href='/'">Zavřít</button>
-            <button class="primary-button" type="submit">Uložit vzhled</button>
-        </div>
-    </form>
-</dialog>
 <script>
-function selectRecentCustomer(button, customerName) {
-    document.querySelector('[name=customer_name]').value = customerName;
 
-    document.querySelectorAll('.recent-button').forEach((item) => {
-        item.classList.remove('active');
-    });
+let itemTypeCloseTimer = null;
 
-}
+function closeItemTypeDropdown() {
+    const overlay = document.querySelector("#item-type-overlay");
 
-function confirmCustomerInput(event) {
-    if (event.key !== "Enter") {
+    document
+        .querySelectorAll(".item-type-dropdown.open")
+        .forEach((dropdown) => {
+            dropdown.classList.remove("open");
+        });
+
+    if (!overlay || overlay.hidden) {
         return;
     }
 
-    event.preventDefault();
+    overlay.classList.remove("show");
 
-    const customerInput = event.target;
-    customerInput.blur();
-
-    document.querySelectorAll('.recent-button').forEach((button) => {
-        button.classList.remove('active');
-
-        if (button.textContent.trim() === customerInput.value.trim()) {
-        }
-    });
-}
-function updateThemePreview(selectedTheme) {
-    const preview = document.querySelector('#theme-preview');
-
-    if (preview) {
-        preview.className = `theme-window preview-${selectedTheme}`;
+    if (itemTypeCloseTimer) {
+        clearTimeout(itemTypeCloseTimer);
     }
 
-    document.querySelectorAll('.theme-option').forEach((option) => {
-        const input = option.querySelector('input[name="theme"]');
-        option.classList.toggle('active', input && input.value === selectedTheme);
-    });
+    itemTypeCloseTimer = setTimeout(() => {
+        overlay.hidden = true;
+        overlay.innerHTML = "";
+        overlay.dataset.dropdownId = "";
+        itemTypeCloseTimer = null;
+    }, 120);
 }
 
-function applyThemeToPage(themeName) {
-    document.body.classList.remove(
-        "theme-light",
-        "theme-poison",
-        "theme-ocean",
-        "theme-purple",
-        "theme-casino",
-        "theme-carbon"
+
+function openItemTypeDropdown(button, dropdown) {
+    const overlay = document.querySelector("#item-type-overlay");
+
+    if (!overlay) {
+        return;
+    }
+
+    if (itemTypeCloseTimer) {
+        clearTimeout(itemTypeCloseTimer);
+        itemTypeCloseTimer = null;
+    }
+
+    document
+        .querySelectorAll(".item-type-dropdown.open")
+        .forEach((otherDropdown) => {
+            if (otherDropdown !== dropdown) {
+                otherDropdown.classList.remove("open");
+            }
+        });
+
+    const rect = button.getBoundingClientRect();
+    const options = dropdown.querySelectorAll(".item-type-option");
+    const input = dropdown.querySelector(".item-type-value");
+
+    overlay.innerHTML = "";
+
+    options.forEach((option) => {
+        const overlayOption = option.cloneNode(true);
+        const value = overlayOption.dataset.value || "";
+
+        if (input && value === input.value) {
+            overlayOption.classList.add("selected");
+        }
+
+        overlay.appendChild(overlayOption);
+    });
+
+    if (!dropdown.dataset.dropdownId) {
+        dropdown.dataset.dropdownId =
+            `item-type-${Date.now()}-${Math.random()}`;
+    }
+
+    overlay.dataset.dropdownId = dropdown.dataset.dropdownId;
+    overlay.style.left = `${rect.left}px`;
+    overlay.style.top = `${rect.bottom + 6}px`;
+    overlay.style.width = `${rect.width}px`;
+
+    overlay.hidden = false;
+
+    requestAnimationFrame(() => {
+        overlay.classList.add("show");
+    });
+
+    dropdown.classList.add("open");
+}
+
+
+function toggleItemTypeDropdown(button) {
+    const dropdown = button.closest(".item-type-dropdown");
+    const overlay = document.querySelector("#item-type-overlay");
+
+    if (!dropdown || !overlay) {
+        return;
+    }
+
+    const isOpen =
+        !overlay.hidden
+        && overlay.dataset.dropdownId === dropdown.dataset.dropdownId;
+
+    if (isOpen) {
+        closeItemTypeDropdown();
+        return;
+    }
+
+    openItemTypeDropdown(button, dropdown);
+}
+
+function selectItemType(button) {
+    const overlay = document.querySelector("#item-type-overlay");
+
+    if (!overlay) {
+        return;
+    }
+
+    const dropdown = document.querySelector(
+        `.item-type-dropdown[data-dropdown-id="${overlay.dataset.dropdownId}"]`
     );
 
-    document.body.classList.add(`theme-${themeName}`);
+    if (!dropdown) {
+        return;
+    }
+
+    const hiddenInput = dropdown.querySelector('input[name="item_type"]');
+    const label = dropdown.querySelector(".item-type-label");
+
+    if (hiddenInput) {
+        hiddenInput.value = button.dataset.value;
+    }
+
+    if (label) {
+        label.textContent = "";
+
+        const name = document.createElement("span");
+        name.className = "item-type-name";
+        name.textContent = button.dataset.name || "";
+        label.appendChild(name);
+
+        if (button.dataset.showCode === "1") {
+            const code = document.createElement("span");
+            code.className = "item-type-code";
+            code.textContent = `(${button.dataset.code})`;
+            label.appendChild(code);
+        }
+    }
+
+    closeItemTypeDropdown();
+    saveProtocolDraft();
 }
 
-document.querySelectorAll('#theme-dialog input[name="theme"]').forEach((radio) => {
-    radio.addEventListener('change', () => {
-        updateThemePreview(radio.value);
-        applyThemeToPage(radio.value);
-    });
+document.addEventListener("click", (event) => {
+    if (
+        event.target.closest(".item-type-dropdown")
+        || event.target.closest("#item-type-overlay")
+    ) {
+        return;
+    }
+
+    closeItemTypeDropdown();
 });
 
-const params = new URLSearchParams(window.location.search);
 
-if (params.get("open") === "settings") {
-    document.querySelector("#settings-dialog")?.showModal();
+window.addEventListener("resize", closeItemTypeDropdown);
+window.addEventListener("scroll", closeItemTypeDropdown, true);
+
+async function syncProtocolNumber() {
+    const input = document.querySelector('input[name="protocol_number"]');
+
+    if (!input) {
+        return;
+    }
+
+    try {
+        const response = await fetch("/api/protocol-number", {
+            cache: "no-store",
+        });
+
+        if (!response.ok) {
+            return;
+        }
+
+        const data = await response.json();
+
+        if (
+            data.protocol_number
+            && input.value !== data.protocol_number
+        ) {
+            input.value = data.protocol_number;
+        }
+    } catch (error) {
+        console.error(
+            "Nepodařilo se synchronizovat číslo protokolu.",
+            error,
+        );
+    }
 }
+
+function refreshProtocolNumber() {
+    syncProtocolNumber();
+
+    setTimeout(syncProtocolNumber, 250);
+    setTimeout(syncProtocolNumber, 1000);
+}
+
+window.addEventListener("pageshow", refreshProtocolNumber);
+window.addEventListener("focus", refreshProtocolNumber);
+
+document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) {
+        refreshProtocolNumber();
+    }
+});
+
+refreshProtocolNumber();
+setInterval(syncProtocolNumber, 2000);
+
+function resetProtocolForm() {
+    if (!confirm("Opravdu vymazat všechna nastavení formuláře?")) {
+        return;
+    }
+
+    const form = document.createElement("form");
+    form.method = "post";
+    form.action = "/reset-protocol-form";
+
+    document.body.appendChild(form);
+    form.submit();
+}
+
+let draftSaveTimer = null;
+
+
+function sendProtocolDraft() {
+    const form = document.querySelector(".protocol-form");
+
+    if (!form) {
+        return;
+    }
+
+    const data = {
+        customer_name: form.customer_name.value,
+        protocol_date: form.protocol_date.value,
+        jira: form.jira.value,
+        receiver: form.receiver.value,
+        protocol_number: form.protocol_number.value,
+        item_type: [],
+        item_value: [],
+        item_count: [],
+    };
+
+    form.querySelectorAll('input[name="item_type"]').forEach(input => {
+        data.item_type.push(input.value);
+    });
+
+    form.querySelectorAll('input[name="item_value"]').forEach(input => {
+        data.item_value.push(input.value);
+    });
+
+    form.querySelectorAll('input[name="item_count"]').forEach(input => {
+        data.item_count.push(input.value);
+    });
+
+    fetch("/api/draft-protocol", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+        keepalive: true,
+    }).catch(() => {});
+}
+
+
+function saveProtocolDraft() {
+    clearTimeout(draftSaveTimer);
+
+    draftSaveTimer = setTimeout(() => {
+        sendProtocolDraft();
+    }, 500);
+}
+
+
+function saveProtocolDraftImmediately() {
+    clearTimeout(draftSaveTimer);
+    sendProtocolDraft();
+}
+function saveProtocolDraft() {
+    clearTimeout(draftSaveTimer);
+
+    draftSaveTimer = setTimeout(() => {
+        const form = document.querySelector(".protocol-form");
+
+        if (!form) {
+            return;
+        }
+
+        const data = {
+            customer_name: form.customer_name.value,
+            protocol_date: form.protocol_date.value,
+            jira: form.jira.value,
+            receiver: form.receiver.value,
+            protocol_number: form.protocol_number.value,
+            item_type: [],
+            item_value: [],
+            item_count: [],
+        };
+
+        form.querySelectorAll('input[name="item_type"]').forEach(input => {
+            data.item_type.push(input.value);
+        });
+
+        form.querySelectorAll('input[name="item_value"]').forEach(input => {
+            data.item_value.push(input.value);
+        });
+
+        form.querySelectorAll('input[name="item_count"]').forEach(input => {
+            data.item_count.push(input.value);
+        });
+
+        fetch("/api/draft-protocol", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+        }).catch(() => {});
+    }, 500);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    document
+        .querySelector(".protocol-form")
+        ?.addEventListener("input", saveProtocolDraft);
+
+    document
+        .querySelector(".protocol-form")
+        ?.addEventListener("change", saveProtocolDraft);
+});
+
 </script>
+
 {% endblock %}

@@ -4,10 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ app_title }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}?v=theme7">
+    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}?v=theme14">
 </head>
 
-<body class="theme-{{ theme }}">
+<body class="{% if request.session.get('role') == 'accounting' and (request.url.path.startswith('/protocols') or request.url.path == '/account') %}theme-light{% else %}theme-{{ theme }}{% endif %}">
     <main class="app-shell">
 
         <header class="titlebar">
@@ -16,54 +16,299 @@
 {% if request.url.path != "/login"
    and request.url.path != "/account"
    and request.url.path != "/users"
-   and not request.url.path.startswith("/users/") %}
+   and not request.url.path.startswith("/users/")
+   and not request.url.path.startswith("/protocols") %}
     <section class="hero glow-card">
-        {% if request.url.path == "/customers" %}
-            <h1>Zákazníci</h1>
-            <p>Správa zákazníků, serverů a adres.</p>
-        {% else %}
-            <h1>Protocol Manager</h1>
-            <p>Rychlé vytváření předávacích protokolů</p>
-        {% endif %}
+{% if request.url.path == "/customers" %}
+    <h1>Zákazníci</h1>
+    <p>Správa zákazníků, serverů a adres.</p>
 
-        <div class="hero-nav">
-            {% if request.url.path == "/customers" or request.url.path == "/preview" %}
-                <a class="nav-button" href="/?open=settings">← Zpět</a>
-            {% else %}
-                <button class="nav-button" type="button" onclick="resetProtocolForm()">Nový protokol</button>
-                <button class="nav-button" type="button" onclick="document.querySelector('#settings-dialog').showModal()">Nastavení</button>
-            {% endif %}
-        </div>
+{% elif request.url.path.startswith("/l1-warehouse") %}
+    <h1>L1 Sklad</h1>
+    <p>Evidence skladových artiklů a pohybů</p>
+
+{% elif request.url.path == "/audit-log" %}
+    <h1>Audit log</h1>
+    <p>Přehled změn provedených v systému.</p>
+
+{% else %}
+    <h1>Protocol Manager</h1>
+    <p>Rychlé vytváření předávacích protokolů</p>
+{% endif %}
+
+<div class="hero-nav">
+{% if request.url.path == "/customers" %}
+<a class="nav-button" href="/?open=settings">
+    ← Zpět
+</a>
+
+<div class="archive-search">
+    <svg
+        viewBox="0 0 24 24"
+        width="18"
+        height="18"
+        aria-hidden="true"
+    >
+        <circle
+            cx="11"
+            cy="11"
+            r="7"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+        />
+        <path
+            d="m16 16 5 5"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+        />
+    </svg>
+
+    <input
+        id="customer-search"
+        type="search"
+        placeholder="Hledat zákazníka..."
+        autocomplete="off"
+    >
+</div>
+
+{% elif request.url.path == "/audit-log" %}
+
+<button
+    class="nav-button"
+    type="button"
+    onclick="goBackOrFallback('/')"
+>
+    ← Zpět
+</button>
+
+<div class="archive-search">
+    <svg
+        viewBox="0 0 24 24"
+        width="18"
+        height="18"
+        aria-hidden="true"
+    >
+        <circle
+            cx="11"
+            cy="11"
+            r="7"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+        />
+        <path
+            d="m16 16 5 5"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+        />
+    </svg>
+
+    <input
+        id="audit-search"
+        type="search"
+        placeholder="Hledat v audit logu..."
+        autocomplete="off"
+    >
+</div>
+
+<button
+    class="nav-button"
+    type="button"
+    onclick="document.querySelector('#menu-dialog')?.showModal()"
+>
+    Menu
+</button>
+
+{% elif request.url.path.startswith("/l1-warehouse")
+or request.url.path == "/preview"
+or request.url.path == "/audit-log" %}
+<button
+    class="nav-button"
+    type="button"
+    onclick="goBackOrFallback('/')"
+>
+    ← Zpět
+</button>
+
+
+{% if request.url.path.startswith("/l1-warehouse")
+   or request.url.path == "/audit-log" %}
+    <button
+        class="nav-button"
+        type="button"
+        onclick="document.querySelector('#menu-dialog')?.showModal()"
+    >
+        Menu
+    </button>
+{% endif %}
+
+    {% else %}
+        <a
+            class="nav-button"
+            href="/l1-warehouse"
+        >
+            L1 Sklad
+        </a>
+
+        <button
+            class="nav-button"
+            type="button"
+            onclick="document.querySelector('#menu-dialog')?.showModal()"
+        >
+            Menu
+        </button>
+    {% endif %}
+</div>
     </section>
 {% endif %}
 
         {% block content %}{% endblock %}
 
+        {% if request.url.path != "/login" %}
+            {% include "partials/settings_dialogs.html" %}
+        {% endif %}
+
     </main>
 
     <script>
-function resetProtocolForm() {
-    const form = document.querySelector(".protocol-form");
-    if (!form) return;
+function goBackOrFallback(fallbackUrl = "/") {
+    const referrer = document.referrer;
 
-    const jira = form.querySelector("[name='jira']");
-    if (jira) jira.value = "";
+    if (referrer) {
+        try {
+            const previousUrl = new URL(referrer);
 
-    const customer = form.querySelector("[name='customer_name']");
-    if (customer) customer.value = "";
-
-    const todayInput = form.querySelector("[name='protocol_date']");
-    if (todayInput) {
-        const today = new Date().toISOString().slice(0, 10);
-        todayInput.value = today;
+            if (previousUrl.origin === window.location.origin) {
+                window.history.back();
+                return;
+            }
+        } catch (error) {
+            console.error("Nepodařilo se zpracovat předchozí adresu.", error);
+        }
     }
 
-    form.querySelectorAll("[name='item_type']").forEach(input => input.value = "");
-    form.querySelectorAll("[name='item_value']").forEach(input => input.value = "");
-    form.querySelectorAll("[name='item_count']").forEach(input => input.value = "");
-
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.location.href = fallbackUrl;
 }
+
+function closeFormDropdown() {
+    document.querySelectorAll(
+        ".form-dropdown"
+    ).forEach(function (dropdown) {
+        const trigger = dropdown.querySelector(
+            ".form-dropdown-trigger"
+        );
+
+        const menu = dropdown.querySelector(
+            ".form-dropdown-menu"
+        );
+
+        dropdown.classList.remove("open");
+
+        if (trigger) {
+            trigger.setAttribute(
+                "aria-expanded",
+                "false"
+            );
+        }
+
+        if (menu) {
+            menu.hidden = true;
+        }
+    });
+}
+
+
+function toggleFormDropdown(button) {
+    const dropdown = button.closest(
+        ".form-dropdown"
+    );
+
+    if (!dropdown) {
+        return;
+    }
+
+    const menu = dropdown.querySelector(
+        ".form-dropdown-menu"
+    );
+
+    if (!menu) {
+        return;
+    }
+
+    const shouldOpen = menu.hidden;
+
+    closeFormDropdown();
+
+    if (shouldOpen) {
+        dropdown.classList.add("open");
+        menu.hidden = false;
+
+        button.setAttribute(
+            "aria-expanded",
+            "true"
+        );
+    }
+}
+
+
+function selectFormDropdownOption(button) {
+    const dropdown = button.closest(
+        ".form-dropdown"
+    );
+
+    if (!dropdown) {
+        return;
+    }
+
+    const input = dropdown.querySelector(
+        ".form-dropdown-value"
+    );
+
+    const label = dropdown.querySelector(
+        ".form-dropdown-label"
+    );
+
+    const value = button.dataset.value || "";
+    const text = button.textContent.trim();
+
+    if (input) {
+        input.value = value;
+    }
+
+    if (label) {
+        label.textContent = text;
+    }
+
+    dropdown.querySelectorAll(
+        ".form-dropdown-option"
+    ).forEach(function (option) {
+        option.classList.toggle(
+            "selected",
+            option.dataset.value === value
+        );
+    });
+
+    closeFormDropdown();
+}
+
+
+document.addEventListener(
+    "click",
+    function (event) {
+        if (
+            !event.target.closest(
+                ".form-dropdown"
+            )
+        ) {
+            closeFormDropdown();
+        }
+    }
+);
 
 function addItemRow() {
     const table = document.querySelector(".items-table");
@@ -72,13 +317,69 @@ function addItemRow() {
     const row = document.createElement("div");
     row.className = "item-row";
     row.innerHTML = `
-        <input name="item_type" placeholder="Flash / Chip / Univerzální flash">
+        <select class="item-type-select" name="item_type" required>
+            <option value="">Vyber artikl</option>
+            {% for item in protocol_items %}
+                <option value="{{ item.name }}">
+                    {{ item.name }}
+                </option>
+            {% endfor %}
+        </select>
+
         <input name="item_value" placeholder="Sériové číslo nebo poznámka">
-        <input name="item_count" placeholder="Počet">
+        <div class="item-quantity-stepper">
+    <button
+        class="item-quantity-stepper-button"
+        type="button"
+        aria-label="Snížit počet"
+        onclick="itemQuantityStep(this, -1)"
+    >
+        −
+    </button>
+
+    <input
+        class="item-quantity-stepper-input"
+        name="item_count"
+        type="number"
+        min="0"
+        step="1"
+        placeholder="Počet"
+    >
+
+    <button
+        class="item-quantity-stepper-button"
+        type="button"
+        aria-label="Zvýšit počet"
+        onclick="itemQuantityStep(this, 1)"
+    >
+        +
+    </button>
+</div>
         <button class="remove-item-button" type="button" onclick="removeItemRow(this)">Smazat</button>
     `;
 
     table.appendChild(row);
+}
+
+function itemQuantityStep(button, change) {
+    const stepper = button.closest(".item-quantity-stepper");
+    if (!stepper) return;
+
+    const input = stepper.querySelector(
+        'input[name="item_count"]'
+    );
+
+    if (!input) return;
+
+    const currentValue = Number.parseInt(input.value, 10);
+    const safeValue = Number.isFinite(currentValue)
+        ? currentValue
+        : 0;
+
+    input.value = Math.max(0, safeValue + change);
+    input.dispatchEvent(
+        new Event("input", { bubbles: true })
+    );
 }
 
 function removeItemRow(button) {
@@ -88,6 +389,12 @@ function removeItemRow(button) {
     row.remove();
 }
     </script>
+
+<div
+    id="item-type-overlay"
+    class="item-type-overlay"
+    hidden
+></div>
 
 </body>
 </html>

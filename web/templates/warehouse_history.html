@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="warehouse-page">
+    <div class="warehouse-toolbar">
+        <div>
+            <h2>Historie pohybů L1 skladu</h2>
+            <p class="muted-text">
+                Ruční změny a později také automatické výdeje z protokolů.
+            </p>
+        </div>
+
+        <label class="archive-search warehouse-history-search">
+            <svg
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+            >
+                <path
+                    d="M10.5 4a6.5 6.5 0 1 0 4.02 11.61l4.44 4.44 1.42-1.42-4.44-4.44A6.5 6.5 0 0 0 10.5 4Zm0 2a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9Z"
+                ></path>
+            </svg>
+
+            <input
+                id="warehouse-history-search"
+                type="search"
+                placeholder="Hledat v historii..."
+                autocomplete="off"
+            >
+        </label>
+    </div>
+
+    <div class="warehouse-history-table">
+        <div class="warehouse-table-head">Datum</div>
+        <div class="warehouse-table-head">Artikl</div>
+        <div class="warehouse-table-head warehouse-number">Změna</div>
+        <div class="warehouse-table-head warehouse-number">Stav po změně</div>
+        <div class="warehouse-table-head">Protokol</div>
+        <div class="warehouse-table-head">Jira</div>
+        <div class="warehouse-table-head">Uživatel</div>
+        <div class="warehouse-table-head">Poznámka</div>
+
+        {% for movement in movements %}
+
+                    <div
+                class="warehouse-history-row"
+                data-history-search="{{ (
+                    movement.created_at|string
+                    ~ ' '
+                    ~ movement.item_name|string
+                    ~ ' '
+                    ~ movement.quantity_change|string
+                    ~ ' '
+                    ~ movement.quantity_after|string
+                    ~ ' '
+                    ~ (movement.protocol_number or '')
+                    ~ ' '
+                    ~ (movement.jira or '')
+                    ~ ' '
+                    ~ (movement.created_by or '')
+                    ~ ' '
+                    ~ (movement.note or '')
+                )|lower }}"
+            >
+            <div class="warehouse-cell">
+                {{ movement.created_at }}
+            </div>
+
+            <div class="warehouse-cell">
+                {{ movement.item_name }}
+            </div>
+
+            <div class="warehouse-cell warehouse-number">
+                <strong class="{% if movement.quantity_change > 0 %}positive-quantity{% else %}negative-quantity{% endif %}">
+                    {% if movement.quantity_change > 0 %}+{% endif %}{{ movement.quantity_change }}
+                </strong>
+            </div>
+
+            <div class="warehouse-cell warehouse-number">
+                {{ movement.quantity_after }}
+            </div>
+
+            <div class="warehouse-cell">
+                {{ movement.protocol_number or "—" }}
+            </div>
+
+            <div class="warehouse-cell">
+                {{ movement.jira or "—" }}
+            </div>
+
+            <div class="warehouse-cell">
+                {{ movement.created_by or "—" }}
+            </div>
+
+            <div class="warehouse-cell">
+                {{ movement.note or "—" }}
+            </div>
+
+        </div>
+        {% else %}
+            <div class="warehouse-empty">
+                Historie skladu je zatím prázdná.
+            </div>
+        {% endfor %}
+    </div>
+</section>
+
+<script>
+function buildDateSearchVariants(value) {
+    const match = value.match(
+        /^(\d{4})-(\d{2})-(\d{2})/
+    );
+
+    if (!match) {
+        return "";
+    }
+
+    const year = match[1];
+    const monthPadded = match[2];
+    const dayPadded = match[3];
+
+    const month = String(Number(monthPadded));
+    const day = String(Number(dayPadded));
+
+    return [
+        day + "." + month + "." + year,
+        day + "." + month + ".",
+        day + "." + month,
+        day + "." + monthPadded + "." + year,
+        day + "." + monthPadded + ".",
+        dayPadded + "." + monthPadded + "." + year
+    ].join(" ");
+}
+
+const warehouseHistorySearch = document.querySelector(
+    "#warehouse-history-search"
+);
+
+if (warehouseHistorySearch) {
+    warehouseHistorySearch.addEventListener("input", function () {
+        const searchValue = this.value
+            .trim()
+            .toLocaleLowerCase("cs");
+
+        document.querySelectorAll(
+            ".warehouse-history-row"
+        ).forEach(function (row) {
+            const originalSearchText =
+                row.dataset.historySearch || "";
+
+            const firstCell = row.querySelector(
+                ".warehouse-cell"
+            );
+
+            const createdAt = firstCell
+                ? firstCell.textContent.trim()
+                : "";
+
+            const dateVariants =
+                buildDateSearchVariants(createdAt);
+
+            const searchableText = (
+                originalSearchText + " " + dateVariants
+            ).toLocaleLowerCase("cs");
+
+            row.style.display = searchableText.includes(searchValue)
+                ? "contents"
+                : "none";
+        });
+    });
+}
+</script>
+
+{% endblock %}

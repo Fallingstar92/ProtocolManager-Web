@@ -2,7 +2,47 @@
 
 {% block content %}
 <section class="card account-card">
-    <h2>Můj účet</h2>
+    <div class="account-header">
+        <h2>Můj účet</h2>
+
+       <a
+    class="secondary-button account-logout-button"
+    href="/logout"
+>
+    <svg
+        class="logout-icon"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+    >
+        <path
+            d="M10 17l5-5-5-5"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        />
+        <path
+            d="M15 12H3"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+        />
+        <path
+            d="M13 4h6v16h-6"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        />
+    </svg>
+
+    <span>Odhlásit</span>
+</a>
+    </div>
 
     {% if error %}
         <div class="alert error">{{ error }}</div>
@@ -33,14 +73,68 @@
             <label for="role">Role</label>
 
             {% if request.session.role == "admin" %}
-                <div class="select-wrapper">
-                    <select id="role" name="role">
-                        <option value="user" {% if request.session.role == "user" %}selected{% endif %}>user</option>
-                        <option value="admin" {% if request.session.role == "admin" %}selected{% endif %}>admin</option>
-                    </select>
-                </div>
+    <div class="account-role-dropdown">
+        <input
+            id="role"
+            class="account-role-value"
+            name="role"
+            type="hidden"
+            value="{{ request.session.role }}"
+        >
+
+        <button
+            class="account-role-trigger"
+            type="button"
+            aria-expanded="false"
+            onclick="toggleAccountRoleDropdown(this)"
+        >
+            <span class="account-role-label">
+                {% if request.session.role == "accounting" %}
+                    Účetní
+                {% elif request.session.role == "admin" %}
+                    Administrátor
+                {% else %}
+                    Uživatel
+                {% endif %}
+            </span>
+
+            <span class="item-type-arrow"></span>
+        </button>
+
+        <div class="account-role-menu" hidden>
+            <button
+                class="account-role-option"
+                type="button"
+                data-value="user"
+                onclick="selectAccountRole(this)"
+            >
+                Uživatel
+            </button>
+
+            <button
+                class="account-role-option selected"
+                type="button"
+                data-value="admin"
+                onclick="selectAccountRole(this)"
+            >
+                Administrátor
+            </button>
+
+            <button
+                class="account-role-option"
+                type="button"
+                data-value="accounting"
+                onclick="selectAccountRole(this)"
+            >
+                Účetní
+            </button>
+        </div>
+    </div>
             {% else %}
-                <input value="{{ request.session.role }}" disabled>
+                <input
+                    value="{% if request.session.role == 'accounting' %}Účetní{% elif request.session.role == 'admin' %}Administrátor{% else %}Uživatel{% endif %}"
+                    disabled
+                >
                 <input type="hidden" name="role" value="{{ request.session.role }}">
             {% endif %}
         </div>
@@ -56,12 +150,29 @@
         </div>
 
         <div class="form-actions">
-            {% if not force_password %}
-                <a class="nav-button" href="/?open=settings">← Zpět</a>
-            {% endif %}
+{% if not force_password %}
+    {% if request.session.role == "accounting" %}
+        <button
+            class="nav-button"
+            type="button"
+            onclick="goBackOrFallback('/protocols')"
+        >
+            ← Zpět
+        </button>
+    {% else %}
+        <button
+            class="nav-button"
+            type="button"
+            onclick="goBackOrFallback('/?open=settings')"
+        >
+            ← Zpět
+        </button>
+    {% endif %}
+{% endif %}
 
             <button type="submit">Uložit</button>
         </div>
     </form>
 </section>
+
 {% endblock %}

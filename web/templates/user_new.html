@@ -19,13 +19,60 @@
             <input name="full_name" value="" required>
         </div>
 
-        <div class="field-group">
-            <label>Role</label>
-            <select name="role">
-                <option value="user" selected>user</option>
-                <option value="admin">admin</option>
-            </select>
+<div class="field-group">
+    <label>Role</label>
+
+    <div class="account-role-dropdown">
+        <input
+            class="account-role-value"
+            name="role"
+            type="hidden"
+            value="user"
+        >
+
+        <button
+            class="account-role-trigger"
+            type="button"
+            aria-expanded="false"
+            onclick="toggleAccountRoleDropdown(this)"
+        >
+            <span class="account-role-label">
+                Uživatel
+            </span>
+
+            <span class="item-type-arrow"></span>
+        </button>
+
+        <div class="account-role-menu" hidden>
+            <button
+                class="account-role-option selected"
+                type="button"
+                data-value="user"
+                onclick="selectAccountRole(this)"
+            >
+                Uživatel
+            </button>
+
+            <button
+                class="account-role-option"
+                type="button"
+                data-value="admin"
+                onclick="selectAccountRole(this)"
+            >
+                Administrátor
+            </button>
+
+            <button
+                class="account-role-option"
+                type="button"
+                data-value="accounting"
+                onclick="selectAccountRole(this)"
+            >
+                Účetní
+            </button>
         </div>
+    </div>
+</div>
 
         <div class="field-group">
     <div class="switch-row">
@@ -53,7 +100,9 @@
         </div>
 
         <div class="bottom-actions">
-    <a class="secondary-button" href="/users">← Zpět</a>
+<a class="secondary-button" href="/users">
+    ← Zpět
+</a>
 
     <button class="primary-button" type="submit">
         Vytvořit

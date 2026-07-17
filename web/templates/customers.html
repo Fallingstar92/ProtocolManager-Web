@@ -3,8 +3,6 @@
 {% block content %}
 <section class="glow-card customers-card">
 
-    </div>
-
     <form class="customer-form customer-add-form" method="post" action="/customers/add">
         <div class="customer-fields">
             <label>
@@ -28,9 +26,16 @@
 
     <div class="customers-list">
         {% for customer in customers %}
-        <form class="customer-form customer-existing-form" 
-              method="post" 
-              action="/customers/update/{{ customer.id }}">
+        <form
+            class="customer-form customer-existing-form"
+            method="post"
+            action="/customers/update/{{ customer.id }}"
+            data-customer-search="{{ (
+                customer.company ~ ' ' ~
+                (customer.server or '') ~ ' ' ~
+                (customer.address or '')
+        ) | lower }}"
+    >
             
             <div class="customer-fields">
                 <label>
@@ -64,4 +69,35 @@
         {% endfor %}
     </div>
 </section>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const searchInput = document.querySelector("#customer-search");
+    const customerForms = document.querySelectorAll(
+        ".customer-existing-form"
+    );
+
+    if (!searchInput) {
+        return;
+    }
+
+    searchInput.addEventListener("input", () => {
+        const query = searchInput.value
+            .trim()
+            .toLocaleLowerCase("cs");
+
+        customerForms.forEach(form => {
+            const searchableText = (
+                form.dataset.customerSearch || ""
+            ).toLocaleLowerCase("cs");
+
+            form.hidden = (
+                query !== "" &&
+                !searchableText.includes(query)
+            );
+        });
+    });
+});
+</script>
+
 {% endblock %}

@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}
+Audit log
+{% endblock %}
+
+{% block content %}
+
+
+<section class="card">
+
+    <table class="protocol-table">
+        <thead>
+            <tr>
+                <th>Datum</th>
+                <th>Uživatel</th>
+                <th>Akce</th>
+                <th>Objekt</th>
+                <th>Popis</th>
+            </tr>
+        </thead>
+
+        <tbody>
+        {% for entry in audit_entries %}
+            <tr
+    class="audit-entry-row"
+    data-audit-search="{{ (
+        (entry.created_at or '') ~ ' ' ~
+        (entry.username or '') ~ ' ' ~
+        (entry.action or '') ~ ' ' ~
+        (entry.entity_type or '') ~ ' ' ~
+        (entry.description or '')
+    ) | lower }}"
+>
+                <td>{{ entry.created_at }}</td>
+                <td>{{ entry.username }}</td>
+                <td>{{ entry.action }}</td>
+                <td>{{ entry.entity_type }}</td>
+                <td>{{ entry.description }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const searchInput = document.querySelector("#audit-search");
+    const auditRows = document.querySelectorAll(".audit-entry-row");
+
+    if (!searchInput) {
+        return;
+    }
+
+    searchInput.addEventListener("input", () => {
+        const query = searchInput.value
+            .trim()
+            .toLocaleLowerCase("cs");
+
+        auditRows.forEach((row) => {
+            const searchableText = (
+                row.dataset.auditSearch || ""
+            ).toLocaleLowerCase("cs");
+
+            row.hidden = (
+                query !== "" &&
+                !searchableText.includes(query)
+            );
+        });
+    });
+});
+</script>
+
+{% endblock %}

@@ -31,13 +31,66 @@
             <input name="full_name" value="{{ user.full_name }}" required>
         </div>
 
-        <div class="field-group">
-            <label>Role</label>
-            <select name="role">
-                <option value="user" {% if user.role == "user" %}selected{% endif %}>user</option>
-                <option value="admin" {% if user.role == "admin" %}selected{% endif %}>admin</option>
-            </select>
+<div class="field-group">
+    <label>Role</label>
+
+    <div class="account-role-dropdown">
+        <input
+            class="account-role-value"
+            name="role"
+            type="hidden"
+            value="{{ user.role }}"
+        >
+
+        <button
+            class="account-role-trigger"
+            type="button"
+            aria-expanded="false"
+            onclick="toggleAccountRoleDropdown(this)"
+        >
+            <span class="account-role-label">
+                {% if user.role == "accounting" %}
+                    Účetní
+                {% elif user.role == "admin" %}
+                    Administrátor
+                {% else %}
+                    Uživatel
+                {% endif %}
+            </span>
+
+            <span class="item-type-arrow"></span>
+        </button>
+
+        <div class="account-role-menu" hidden>
+            <button
+                class="account-role-option {% if user.role == 'user' %}selected{% endif %}"
+                type="button"
+                data-value="user"
+                onclick="selectAccountRole(this)"
+            >
+                Uživatel
+            </button>
+
+            <button
+                class="account-role-option {% if user.role == 'admin' %}selected{% endif %}"
+                type="button"
+                data-value="admin"
+                onclick="selectAccountRole(this)"
+            >
+                Administrátor
+            </button>
+
+            <button
+                class="account-role-option {% if user.role == 'accounting' %}selected{% endif %}"
+                type="button"
+                data-value="accounting"
+                onclick="selectAccountRole(this)"
+            >
+                Účetní
+            </button>
         </div>
+    </div>
+</div>
 
         <div class="field-group">
             <div class="switch-row">
@@ -64,7 +117,9 @@
         </div>
 
         <div class="bottom-actions">
-            <a class="secondary-button" href="/users">← Zpět</a>
+<a class="secondary-button" href="/users">
+    ← Zpět
+</a>
 
             <button class="primary-button" type="submit">
                 Uložit

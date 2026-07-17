@@ -1,0 +1,636 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="warehouse-page">
+    <div class="warehouse-toolbar">
+        <div>
+            <p class="muted-text">
+                Aktuální stav artiklů na skladu.
+            </p>
+        </div>
+
+        <div class="warehouse-toolbar-actions">
+            <button
+                class="primary-button"
+                type="button"
+                onclick="document.querySelector('#warehouse-add-dialog').showModal()"
+            >
+                + Přidat artikl
+            </button>
+
+            <a
+                class="secondary-button button-link"
+                href="/l1-warehouse/history"
+            >
+                Historie pohybů
+            </a>
+        </div>
+    </div>
+
+    {% if status %}
+        <div class="status-message success-message">
+            {{ status }}
+        </div>
+    {% endif %}
+
+    {% if error %}
+        <div class="status-message error-message">
+            {{ error }}
+        </div>
+    {% endif %}
+
+    <div class="warehouse-table">
+        <div class="warehouse-table-head">Artikl</div>
+        <div class="warehouse-table-head">Kód</div>
+        <div class="warehouse-table-head warehouse-number">Stav</div>
+        <div class="warehouse-table-head">Jednotka</div>
+        <div class="warehouse-table-head warehouse-actions">Akce</div>
+
+        {% for item in warehouse_items %}
+            <div class="warehouse-cell">
+                <strong>{{ item.name }}</strong>
+            </div>
+
+            <div class="warehouse-cell">
+                <span class="warehouse-code">
+                    {{ item.code }}
+                </span>
+            </div>
+
+            <div class="warehouse-cell warehouse-number">
+                <strong>{{ item.quantity }}</strong>
+            </div>
+
+            <div class="warehouse-cell">
+                {{ item.unit }}
+            </div>
+
+            <div class="warehouse-cell warehouse-actions">
+                <button
+                    class="secondary-button compact-button"
+                    type="button"
+                    data-item-id="{{ item.id }}"
+                    data-item-name="{{ item.name }}"
+                    data-item-quantity="{{ item.quantity }}"
+                    data-item-unit="{{ item.unit }}"
+                    onclick="openWarehouseEditDialog(this)"
+                >
+                    Upravit
+                </button>
+            </div>
+        {% else %}
+            <div class="warehouse-empty">
+                Ve skladu zatím nejsou žádné artikly.
+            </div>
+        {% endfor %}
+    </div>
+</section>
+
+<dialog
+    id="warehouse-add-dialog"
+    class="settings-dialog warehouse-dialog"
+>
+    <form
+        action="/l1-warehouse/items/add"
+        method="post"
+        class="settings-form"
+        onsubmit="return submitWarehouseForm(this, event)"
+    >
+    <h2 class="warehouse-dialog-title">
+        Přidat artikl
+    </h2>
+
+        <div class="field-group warehouse-quantity-field">
+            <label for="warehouse-item-name">Název</label>
+            <input
+                id="warehouse-item-name"
+                name="name"
+                required
+                placeholder="např. Flash 64 GB"
+            >
+        </div>
+
+        <div class="field-group warehouse-quantity-field">
+            <label for="warehouse-item-code">Kód</label>
+            <input
+                id="warehouse-item-code"
+                name="code"
+                required
+                placeholder="např. FLASH64"
+            >
+        </div>
+
+        <div class="field-group warehouse-quantity-field">
+            <label for="warehouse-item-unit">Jednotka</label>
+            <input
+                id="warehouse-item-unit"
+                name="unit"
+                value="ks"
+                required
+            >
+        </div>
+
+        <div class="field-group warehouse-quantity-field">
+            <label for="warehouse-item-quantity">
+                Počáteční stav
+            </label>
+            <input
+                id="warehouse-item-quantity"
+                name="initial_quantity"
+                type="number"
+                min="0"
+                step="1"
+                value="0"
+                required
+            >
+        </div>
+
+        <label class="checkbox-row">
+            <input
+                name="protocol_enabled"
+                type="checkbox"
+                value="1"
+                checked
+            >
+            Nabízet artikl v předávacím protokolu
+        </label>
+
+        <div class="warehouse-add-actions">
+    <button
+        class="secondary-button"
+        type="button"
+        onclick="closeWarehouseAddDialog()"
+    >
+        Zrušit
+    </button>
+
+    <button
+        class="primary-button"
+        type="submit"
+    >
+        Přidat
+    </button>
+</div>
+    </form>
+</dialog>
+
+<dialog
+    id="warehouse-edit-dialog"
+    class="settings-dialog warehouse-dialog"
+>
+    <form
+        action="/l1-warehouse/adjust"
+        method="post"
+        class="settings-form warehouse-edit-form"
+        onsubmit="return submitWarehouseForm(this, event)"
+    >
+        <div class="warehouse-edit-header">
+            <div class="warehouse-edit-heading">
+                <div class="warehouse-edit-heading-icon" aria-hidden="true">
+                    ✎
+                </div>
+
+                <h2 id="warehouse-edit-title">
+                    Upravit artikl
+                </h2>
+            </div>
+
+            <button
+                class="danger-button warehouse-edit-remove"
+                type="button"
+                onclick="openWarehouseRemoveDialog()"
+            >
+                Odstranit
+            </button>
+        </div>
+
+        <input
+            id="warehouse-edit-item-id"
+            name="item_id"
+            type="hidden"
+        >
+
+        <div class="warehouse-edit-content">
+            <div class="warehouse-current-state">
+                <div class="warehouse-current-state-icon" aria-hidden="true">
+                    ◇
+                </div>
+
+                <div class="warehouse-current-state-content">
+                    <span>Aktuální stav</span>
+
+                    <strong id="warehouse-edit-current-state"></strong>
+                </div>
+            </div>
+
+            <div class="warehouse-edit-fields-row">
+                <div class="field-group warehouse-operation-field">
+                    <label for="warehouse-edit-operation">
+                        Typ změny
+                    </label>
+
+                    <div class="form-dropdown warehouse-operation-dropdown">
+                        <input
+                            id="warehouse-edit-operation"
+                            class="form-dropdown-value"
+                            name="operation"
+                            type="hidden"
+                            value="add"
+                        >
+
+                        <button
+                            class="form-dropdown-trigger"
+                            type="button"
+                            aria-expanded="false"
+                            onclick="toggleFormDropdown(this)"
+                        >
+                            <span class="form-dropdown-label">
+                                Přidat množství
+                            </span>
+
+                            <span class="item-type-arrow"></span>
+                        </button>
+
+                        <div class="form-dropdown-menu" hidden>
+                            <button
+                                class="form-dropdown-option selected"
+                                type="button"
+                                data-value="add"
+                                onclick="selectWarehouseOperation(this)"
+                            >
+                                Přidat množství
+                            </button>
+
+                            <button
+                                class="form-dropdown-option"
+                                type="button"
+                                data-value="remove"
+                                onclick="selectWarehouseOperation(this)"
+                            >
+                                Odebrat množství
+                            </button>
+
+                            <button
+                                class="form-dropdown-option"
+                                type="button"
+                                data-value="set"
+                                onclick="selectWarehouseOperation(this)"
+                            >
+                                Nastavit skutečný stav
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="warehouse-edit-fields-divider"></div>
+
+                <div class="field-group warehouse-quantity-field">
+                    <label for="warehouse-edit-quantity">
+                        Množství
+                    </label>
+
+                    <div class="warehouse-quantity-stepper">
+                        <button
+                            class="warehouse-quantity-stepper-button"
+                            type="button"
+                            aria-label="Snížit množství"
+                            onclick="warehouseQuantityStep(-1)"
+                        >
+                            −
+                        </button>
+
+                        <input
+                            id="warehouse-edit-quantity"
+                            class="warehouse-edit-quantity warehouse-quantity-stepper-input"
+                            name="quantity"
+                            type="number"
+                            min="0"
+                            step="1"
+                            required
+                        >
+
+                        <button
+                            class="warehouse-quantity-stepper-button warehouse-quantity-stepper-button-plus"
+                            type="button"
+                            aria-label="Zvýšit množství"
+                            onclick="warehouseQuantityStep(1)"
+                        >
+                            +
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="field-group warehouse-note-field">
+                <label for="warehouse-edit-note">
+                    Poznámka
+                    <span class="warehouse-note-optional">
+                        (nepovinné)
+                    </span>
+                </label>
+
+                <textarea
+                    id="warehouse-edit-note"
+                    name="note"
+                    rows="3"
+                    placeholder="např. Inventura, nová dodávka nebo oprava nesrovnalosti"
+                ></textarea>
+            </div>
+        </div>
+
+        <div class="warehouse-edit-footer">
+            <div class="warehouse-edit-actions">
+                <button
+                    class="secondary-button"
+                    type="button"
+                    onclick="closeWarehouseEditDialog()"
+                >
+                    Zrušit
+                </button>
+
+                <button
+                    class="primary-button"
+                    type="submit"
+                >
+                    Uložit změnu
+                </button>
+            </div>
+        </div>
+    </form>
+</dialog>
+
+<dialog
+    id="warehouse-remove-dialog"
+    class="settings-dialog warehouse-dialog"
+>
+    <form
+        method="post"
+        class="settings-form"
+
+    >
+    <div class="warehouse-edit-header">
+        <h2>
+            Odstranit artikl
+        </h2>
+
+    <button
+        class="secondary-button compact-button"
+        type="button"
+        onclick="closeWarehouseRemoveDialog()"
+    >
+        ✕
+    </button>
+</div>
+
+        <input
+            id="warehouse-remove-item-id"
+            name="item_id"
+            type="hidden"
+        >
+
+        <p>
+            Vyber způsob odstranění artiklu.
+        </p>
+
+        <p>
+            Trvalé odstranění je možné pouze u artiklu,
+            který nemá žádnou historii pohybů.
+        </p>
+
+        <div class="warehouse-edit-actions">
+
+            <button
+                class="secondary-button"
+                type="submit"
+                formaction="/l1-warehouse/archive"
+            >
+                Pouze deaktivovat
+            </button>
+
+            <button
+                class="danger-button"
+                type="submit"
+                name="force_delete"
+                value="1"
+                formaction="/l1-warehouse/delete"
+                onclick="return confirmWarehousePermanentDeletion()"
+            >
+                Kompletně odstranit
+            </button>
+        </div>
+    </form>
+</dialog>
+
+<script>
+function closeWarehouseAddDialog() {
+    const dialog = document.querySelector("#warehouse-add-dialog");
+
+    if (dialog) {
+        dialog.close();
+    }
+}
+
+function closeWarehouseEditDialog() {
+    const dialog = document.querySelector("#warehouse-edit-dialog");
+
+    if (dialog) {
+        dialog.close();
+    }
+}
+
+function selectWarehouseOperation(button) {
+    const dropdown = button.closest(".form-dropdown");
+
+    if (!dropdown) {
+        return;
+    }
+
+    const input = dropdown.querySelector(".form-dropdown-value");
+    const label = dropdown.querySelector(".form-dropdown-label");
+
+    if (input) {
+        input.value = button.dataset.value || "";
+    }
+
+    if (label) {
+        label.textContent = button.textContent.trim();
+    }
+
+    dropdown.querySelectorAll(
+        ".form-dropdown-option"
+    ).forEach(function (option) {
+        option.classList.toggle(
+            "selected",
+            option === button
+        );
+    });
+
+closeFormDropdown();
+
+}
+
+function openWarehouseRemoveDialog() {
+    const itemId = document.querySelector(
+        "#warehouse-edit-item-id"
+    ).value;
+
+    document.querySelector(
+        "#warehouse-remove-item-id"
+    ).value = itemId;
+
+    closeWarehouseEditDialog();
+
+    document.querySelector(
+        "#warehouse-remove-dialog"
+    ).showModal();
+}
+
+function closeWarehouseRemoveDialog() {
+    const dialog = document.querySelector(
+        "#warehouse-remove-dialog"
+    );
+
+    if (dialog) {
+        dialog.close();
+    }
+}
+
+function confirmWarehousePermanentDeletion() {
+    return window.confirm(
+        "Skutečně chceš trvale odstranit tento artikl?\n\n"
+        + "Budou smazány také všechny skladové pohyby spojené s tímto artiklem.\n\n"
+        + "Tuto akci nelze vrátit."
+    );
+}
+
+function openWarehouseEditDialog(button) {
+    const itemId = button.dataset.itemId;
+    const itemName = button.dataset.itemName;
+    const quantity = button.dataset.itemQuantity;
+    const unit = button.dataset.itemUnit;
+
+    document.querySelector("#warehouse-edit-item-id").value =
+        itemId;
+
+    document.querySelector("#warehouse-edit-title").textContent =
+        "Upravit: " + itemName;
+
+    document.querySelector(
+        "#warehouse-edit-current-state"
+    ).textContent = quantity + " " + unit;
+
+    document.querySelector(
+        "#warehouse-edit-operation"
+    ).value = "add";
+
+    const operationDropdown = document.querySelector(
+    "#warehouse-edit-operation"
+)?.closest(".form-dropdown");
+
+if (operationDropdown) {
+    const operationLabel = operationDropdown.querySelector(
+        ".form-dropdown-label"
+    );
+
+    if (operationLabel) {
+        operationLabel.textContent = "Přidat množství";
+    }
+
+    operationDropdown.querySelectorAll(
+        ".form-dropdown-option"
+    ).forEach(function (option) {
+        option.classList.toggle(
+            "selected",
+            option.dataset.value === "add"
+        );
+    });
+}
+
+    document.querySelector(
+        "#warehouse-edit-quantity"
+    ).value = "";
+
+    document.querySelector(
+        "#warehouse-edit-note"
+    ).value = "";
+
+    document.querySelector(
+        "#warehouse-edit-dialog"
+    ).showModal();
+}
+
+function submitWarehouseForm(form, event) {
+    event.preventDefault();
+
+    const submitter = event.submitter;
+    const formData = new FormData(form);
+
+    if (submitter && submitter.name) {
+        formData.set(submitter.name, submitter.value);
+    }
+
+    const action =
+        submitter?.getAttribute("formaction")
+        || form.getAttribute("action")
+        || window.location.href;
+
+    const method =
+        submitter?.getAttribute("formmethod")
+        || form.getAttribute("method")
+        || "post";
+
+    closeAllWarehouseDialogs();
+
+    fetch(action, {
+        method: method.toUpperCase(),
+        body: formData,
+        credentials: "same-origin",
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(
+                    "Server vrátil chybu " + response.status
+                );
+            }
+
+            window.location.replace(response.url);
+        })
+        .catch(error => {
+            console.error(error);
+
+            window.alert(
+                "Akci se nepodařilo dokončit. "
+                + "Stránka bude znovu načtena."
+            );
+
+            window.location.reload();
+        });
+
+    return false;
+}
+
+function warehouseQuantityStep(delta) {
+    const quantityInput = document.getElementById(
+        "warehouse-edit-quantity"
+    );
+
+    if (!quantityInput) {
+        return;
+    }
+
+    if (delta > 0) {
+        quantityInput.stepUp();
+    } else {
+        quantityInput.stepDown();
+    }
+
+    quantityInput.dispatchEvent(
+        new Event("input", { bubbles: true })
+    );
+    quantityInput.dispatchEvent(
+        new Event("change", { bubbles: true })
+    );
+}
+
+</script>
+{% endblock %}

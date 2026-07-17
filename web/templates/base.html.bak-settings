@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="cs">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ app_title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}?v=theme12">
+</head>
+
+<body class="{% if request.url.path.startswith('/protocols') or (request.url.path == '/account' and request.session.get('role') == 'accounting') %}theme-light{% else %}theme-{{ theme }}{% endif %}">
+    <main class="app-shell">
+
+        <header class="titlebar">
+        </header>
+
+{% if request.url.path != "/login"
+   and request.url.path != "/account"
+   and request.url.path != "/users"
+   and not request.url.path.startswith("/users/")
+   and not request.url.path.startswith("/protocols") %}
+    <section class="hero glow-card">
+        {% if request.url.path == "/customers" %}
+            <h1>Zákazníci</h1>
+            <p>Správa zákazníků, serverů a adres.</p>
+        {% elif request.url.path.startswith("/l1-warehouse") %}
+            <h1>L1 Sklad</h1>
+            <p>Evidence skladových artiklů a pohybů</p>
+        {% else %}
+            <h1>Protocol Manager</h1>
+            <p>Rychlé vytváření předávacích protokolů</p>
+        {% endif %}
+
+<div class="hero-nav">
+    {% if request.url.path == "/customers"
+      or request.url.path.startswith("/l1-warehouse")
+      or request.url.path == "/preview" %}
+    <button
+        class="nav-button"
+        type="button"
+        onclick="goBackOrFallback('/')"
+    >
+        ← Zpět
+    </button>
+
+    {% if request.url.path.startswith("/l1-warehouse") %}
+        <a
+            class="nav-button"
+            href="/?open=settings"
+        >
+            Nastavení
+        </a>
+    {% endif %}
+
+    {% else %}
+        <a
+            class="nav-button"
+            href="/l1-warehouse"
+        >
+            L1 Sklad
+        </a>
+
+        <button
+            class="nav-button"
+            type="button"
+            onclick="document.querySelector('#settings-dialog').showModal()"
+        >
+            Nastavení
+        </button>
+    {% endif %}
+</div>
+    </section>
+{% endif %}
+
+        {% block content %}{% endblock %}
+
+    </main>
+
+    <script>
+function goBackOrFallback(fallbackUrl = "/") {
+    const referrer = document.referrer;
+
+    if (referrer) {
+        try {
+            const previousUrl = new URL(referrer);
+
+            if (previousUrl.origin === window.location.origin) {
+                window.history.back();
+                return;
+            }
+        } catch (error) {
+            console.error("Nepodařilo se zpracovat předchozí adresu.", error);
+        }
+    }
+
+    window.location.href = fallbackUrl;
+}
+
+function addItemRow() {
+    const table = document.querySelector(".items-table");
+    if (!table) return;
+
+    const row = document.createElement("div");
+    row.className = "item-row";
+    row.innerHTML = `
+        <input name="item_type" placeholder="Flash / Chip / Univerzální flash">
+        <input name="item_value" placeholder="Sériové číslo nebo poznámka">
+        <input name="item_count" placeholder="Počet">
+        <button class="remove-item-button" type="button" onclick="removeItemRow(this)">Smazat</button>
+    `;
+
+    table.appendChild(row);
+}
+
+function removeItemRow(button) {
+    const row = button.closest(".item-row");
+    if (!row) return;
+
+    row.remove();
+}
+    </script>
+
+</body>
+</html>
