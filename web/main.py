@@ -1,12 +1,18 @@
 
 from __future__ import annotations
 
+import re
 import shutil
 import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 from urllib.parse import quote
+from collections import Counter
+from html.parser import HTMLParser
+from urllib.error import HTTPError, URLError
+from urllib.request import Request as UrlRequest
+from urllib.request import urlopen
 
 from src.database.audit import (
     log_action,
@@ -102,6 +108,141 @@ TRANSPORT_RECEIVERS = ["TNT", "DHL", "PPL", "GLS"]
 DEFAULT_PROTOCOL_NUMBER = "0035/2026/PP/IK"
 DEFAULT_SENDER = "Ivan Korec"
 
+TERMINAL_VERSION_SUFFIX = "_g1_7G.bin"
+CML_PARSER_URL = "http://cml/parser.php"
+
+
+class TerminalVersionParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__()
+        self.versions: list[str] = []
+        self._inside_version_cell = False
+        self._version_parts: list[str] = []
+
+    def handle_starttag(
+        self,
+        tag: str,
+        attrs: list[tuple[str, str | None]],
+    ) -> None:
+        if tag.lower() != "div":
+            return
+
+        attributes = dict(attrs)
+
+        if attributes.get("title") == "ver":
+            self._inside_version_cell = True
+            self._version_parts = []
+
+    def handle_data(self, data: str) -> None:
+        if self._inside_version_cell:
+            self._version_parts.append(data)
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag.lower() != "div" or not self._inside_version_cell:
+            return
+
+        version = "".join(self._version_parts).strip()
+
+        if version and version.upper() != "NULL":
+            self.versions.append(version)
+
+        self._inside_version_cell = False
+        self._version_parts = []
+
+
+def _terminal_firmware_filename(server: str) -> dict[str, Any]:
+    server = server.strip()
+
+    if not re.fullmatch(r"[a-zA-Z0-9_-]+", server):
+        raise ValueError("Zákazník nemá platné označení serveru.")
+
+    query = (
+        "dir=live-csv"
+        f"&csv=terminals-{quote(server)}.csv"
+        "&sort=serialno"
+        "&columns=vpn,serialno,ver,reader,active"
+        "&filter_active=t"
+    )
+
+    url = f"{CML_PARSER_URL}?{query}"
+
+    request = UrlRequest(
+        url,
+        headers={
+            "User-Agent": "ProtocolManager/1.0",
+        },
+    )
+
+    try:
+        with urlopen(request, timeout=10) as response:
+            html = response.read().decode(
+                response.headers.get_content_charset() or "utf-8",
+                errors="replace",
+            )
+    except HTTPError as exc:
+        raise RuntimeError(
+            f"CML server vrátil chybu HTTP {exc.code}."
+        ) from exc
+    except URLError as exc:
+        raise RuntimeError(
+            "CML server není dostupný."
+        ) from exc
+    except TimeoutError as exc:
+        raise RuntimeError(
+            "Načítání verze z CML vypršelo."
+        ) from exc
+
+    parser = TerminalVersionParser()
+    parser.feed(html)
+
+    valid_versions: list[tuple[str, str]] = []
+
+    for version in parser.versions:
+        build_match = re.search(r"(\d{10})$", version)
+
+        if not build_match:
+            continue
+
+        valid_versions.append(
+            (
+                version,
+                build_match.group(1),
+            )
+        )
+
+    if not valid_versions:
+        raise RuntimeError(
+            "Na CML nebyla nalezena žádná platná verze terminálu."
+        )
+
+    version_counts = Counter(
+        version
+        for version, _build in valid_versions
+    )
+
+    builds_by_version = {
+        version: build
+        for version, build in valid_versions
+    }
+
+    selected_version = max(
+        version_counts,
+        key=lambda version: (
+            version_counts[version],
+            int(builds_by_version[version]),
+        ),
+    )
+
+    selected_build = builds_by_version[selected_version]
+
+    return {
+        "server": server,
+        "version": selected_version,
+        "build": selected_build,
+        "filename": f"{selected_build}{TERMINAL_VERSION_SUFFIX}",
+        "count": version_counts[selected_version],
+        "total": len(valid_versions),
+    }
 
 def _customers() -> list[dict[str, Any]]:
     return load_customers()
@@ -431,6 +572,88 @@ def reset_protocol_form(request: Request) -> RedirectResponse:
     return RedirectResponse(
         url="/?reset=1",
         status_code=303,
+    )
+
+@app.get("/api/customer-terminal-version")
+def customer_terminal_version(
+    request: Request,
+    customer_name: str = "",
+) -> JSONResponse:
+    redirect = _require_roles(request, "admin", "user")
+
+    if redirect:
+        return JSONResponse(
+            {
+                "success": False,
+                "error": "Přístup odepřen.",
+            },
+            status_code=403,
+        )
+
+    customer_name = customer_name.strip()
+
+    if not customer_name:
+        return JSONResponse(
+            {
+                "success": False,
+                "error": "Nebyl vybrán zákazník.",
+            },
+            status_code=400,
+        )
+
+    customer = _find_customer(customer_name)
+    server = str(customer.get("server", "")).strip()
+
+    if not server:
+        server_match = re.search(
+            r"\(([a-zA-Z0-9_-]+)\)\s*$",
+            customer_name,
+       )
+
+        if server_match:
+           server = server_match.group(1)
+
+    if not server:
+        return JSONResponse(
+            {
+                "success": False,
+                "error": "Zákazník nemá nastavený server.",
+            },
+            status_code=404,
+        )
+
+    try:
+        result = _terminal_firmware_filename(server)
+    except ValueError as exc:
+        return JSONResponse(
+            {
+                "success": False,
+                "error": str(exc),
+            },
+            status_code=400,
+        )
+    except RuntimeError as exc:
+        return JSONResponse(
+            {
+                "success": False,
+                "error": str(exc),
+            },
+            status_code=502,
+        )
+    except Exception:
+        return JSONResponse(
+            {
+                "success": False,
+                "error": "Verzi terminálů se nepodařilo zjistit.",
+            },
+            status_code=500,
+        )
+
+    return JSONResponse(
+        {
+            "success": True,
+            **result,
+        }
     )
 
 @app.get("/api/protocol-number")

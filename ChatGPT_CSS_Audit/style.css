@@ -457,7 +457,7 @@ button:hover, .primary-button:hover, .secondary-button:hover, .nav-button:hover,
     background: var(--panel-dark);
 }
 
-.items-table input:not(.item-quantity-stepper-input),
+.items-table input,
 .items-table select {
     min-height: 46px;
     border-radius: 0;
@@ -469,10 +469,6 @@ button:hover, .primary-button:hover, .secondary-button:hover, .nav-button:hover,
     padding: 10px 13px;
     outline: none;
     font-size: 14px;
-
-    .items-table input[name="item_value"] {
-    border-right: 0;
-}
 }
 
 .items-table .first-item-row > select,
@@ -525,6 +521,10 @@ button:hover, .primary-button:hover, .secondary-button:hover, .nav-button:hover,
 
 .table-head:nth-child(3) {
     text-align: center;
+}
+
+.item-quantity-stepper {
+    justify-self: center;
 }
 
 .actions {
@@ -975,6 +975,11 @@ button:hover, .primary-button:hover, .secondary-button:hover, .nav-button:hover,
     .actions > * { flex: 1; text-align: center; }
 }
 
+.customers-card {
+    display: grid;
+    gap: 18px;
+}
+
 .section-header h2 {
     margin: 0 0 5px;
 }
@@ -982,6 +987,11 @@ button:hover, .primary-button:hover, .secondary-button:hover, .nav-button:hover,
 .section-header p {
     margin: 0;
     color: var(--text-muted);
+}
+
+.customers-list {
+    display: grid;
+    gap: 10px;
 }
 
 .customer-edit-row {
@@ -994,6 +1004,11 @@ button:hover, .primary-button:hover, .secondary-button:hover, .nav-button:hover,
 .customer-add-row {
     padding-bottom: 14px;
     border-bottom: 1px solid var(--border);
+}
+
+.customer-actions {
+    display: flex;
+    gap: 8px;
 }
 
 @media (max-width: 900px) {
@@ -2186,6 +2201,26 @@ textarea {
 }
 
 .theme-dialog-actions .primary-button {
+    margin-left: auto;
+}
+
+#protocol-number-dialog .protocol-number-actions {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+#protocol-number-dialog .protocol-number-actions .primary-button {
+    margin-left: auto;
+}
+
+.dialog-actions-split {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.dialog-actions-split .primary-button {
     margin-left: auto;
 }
 
@@ -3478,57 +3513,48 @@ select.item-type-select:focus {
 }
 
 /* Malý stepper počtu položek na hlavní stránce */
-/* Malý stepper počtu položek na hlavní stránce */
 .item-quantity-stepper {
-    box-sizing: border-box;
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    display: flex;
+    align-items: stretch;
+    align-self: stretch;
 
     width: 100%;
-    height: 46px;
+    min-width: 0;
+    min-height: 46px;
+    height: auto;
 
     margin: 0;
-    padding: 0;
-
-    background: transparent;
+    overflow: hidden;
 
     border: 0;
-    border-left: 1px solid var(--border);
-    border-right: 1px solid var(--border);
-
+    border-top: 1px solid var(--border);
     border-radius: 0;
-    overflow: hidden;
+    background: var(--input);
 }
 
+
 .item-quantity-stepper-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: grid;
+    place-items: center;
 
-    width: 100%;
-    height: 100%;
+    flex: 0 0 46px;
 
-    margin: 0;
+    width: 46px;
+    min-width: 46px;
+    min-height: 46px;
     padding: 0;
 
-    background: transparent;
-
     border: 0;
-    border-top: 0;
-    border-bottom: 0;
     border-radius: 0;
 
+    background: var(--panel-soft);
     color: var(--text);
-    font-size: 28px;
+
+    font-size: 22px;
     font-weight: 700;
     line-height: 1;
 
     cursor: pointer;
-    transition: background .15s ease;
-}
-
-.item-quantity-stepper-button:hover {
-    background: var(--bg-secondary);
 }
 
 .item-quantity-stepper-button:first-child {
@@ -3539,45 +3565,58 @@ select.item-type-select:focus {
     border-left: 1px solid var(--border);
 }
 
+.item-quantity-stepper-button:hover {
+    background: var(--accent-soft);
+    color: var(--accent);
+}
+
+.item-quantity-stepper-button:active {
+    transform: none;
+    background: var(--panel-dark);
+}
+
 .item-quantity-stepper-input {
-    display: block;
+    flex: 1 1 auto;
 
-    width: 100%;
-    height: 100%;
-
+    width: 0;
     min-width: 0;
-    min-height: 0;
+    height: 100%;
+    padding: 0 8px;
 
-    margin: 0;
-    padding: 0;
-
-    background: transparent;
-
-    border: 0 !important;
-    border-top: 0 !important;
-    border-bottom: 0 !important;
-    border-left: 0 !important;
-    border-right: 0 !important;
-
+    border: 0;
+    border-radius: 0;
     outline: 0;
     box-shadow: none;
 
+    background: transparent;
     color: var(--text);
 
     text-align: center;
     font: inherit;
     font-weight: 700;
-    line-height: 46px;
 
     appearance: textfield;
-    -webkit-appearance: none;
-    -moz-appearance: textfield;
 }
 
-.item-quantity-stepper-input::-webkit-outer-spin-button,
-.item-quantity-stepper-input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
+.item-quantity-stepper-input:focus {
+    border: 0;
+    outline: 0;
+    box-shadow: none;
+}
+
+.item-quantity-stepper-input::-webkit-inner-spin-button,
+.item-quantity-stepper-input::-webkit-outer-spin-button {
     margin: 0;
+    appearance: none;
+}
+
+#protocol-number-dialog .protocol-number-field {
+    width: 100%;
+    max-width: 300px;
+}
+
+#protocol-number-dialog .protocol-number-field input {
+    width: 100%;
 }
 
 #protocol-number-dialog .settings-form {
@@ -3603,209 +3642,4 @@ select.item-type-select:focus {
 #protocol-number-dialog {
     width: 440px;
     max-width: 90vw;
-}
-
-#warehouse-add-dialog {
-    width: 430px;
-    max-width: 90vw;
-    min-width: 0;
-}
-
-#warehouse-add-dialog .settings-form {
-    gap: 14px;
-    padding: 22px 24px 24px;
-}
-
-#warehouse-add-dialog .warehouse-dialog-title {
-    margin-bottom: 2px;
-}
-
-#warehouse-add-dialog .field-group {
-    gap: 5px;
-}
-
-#warehouse-add-dialog .checkbox-row {
-    margin-top: 2px;
-}
-
-#warehouse-add-dialog .warehouse-add-actions {
-    margin-top: 10px;
-}
-
-#warehouse-add-dialog .settings-form {
-    justify-items: center;
-}
-
-#warehouse-add-dialog .field-group {
-    width: 100%;
-    max-width: 260px;
-    justify-items: center;
-}
-
-#warehouse-add-dialog .field-group label {
-    align-self: start;
-    width: 100%;
-}
-
-#warehouse-add-dialog .field-group input {
-    width: 100%;
-}
-
-#warehouse-add-dialog .warehouse-quantity-stepper {
-    width: fit-content;
-    margin: 0 auto;
-    box-sizing: border-box;
-}
-
-#warehouse-add-dialog .warehouse-quantity-stepper-button {
-    flex: 0 0 30px;
-    width: 30px;
-}
-
-#warehouse-add-dialog .warehouse-quantity-stepper-input {
-    width: 60px;
-    min-width: 0;
-    padding: 0;
-    text-align: center;
-}
-
-#warehouse-add-dialog .checkbox-row {
-    width: 260px;
-}
-
-#warehouse-add-dialog .warehouse-add-actions {
-    width: 260px;
-}
-
-.account-role-dropdown {
-    position: relative;
-    width: 360px;
-    max-width: 100%;
-}
-
-.account-role-trigger {
-    width: 100%;
-    min-height: 46px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-
-    padding: 10px 13px;
-    border: 1px solid var(--border);
-    border-radius: 11px;
-
-    background: var(--input);
-    color: var(--text);
-    text-align: left;
-}
-
-.account-role-trigger:hover,
-.account-role-trigger:focus {
-    border-color: var(--accent);
-    background: var(--bg-secondary);
-    outline: none;
-}
-
-.account-role-dropdown.open .account-role-trigger {
-    border-color: var(--accent);
-}
-
-.account-role-label {
-    flex: 1;
-    min-width: 0;
-}
-
-
-.account-role-dropdown.open .account-role-trigger::after {
-    transform: rotate(225deg) translate(-2px, -2px);
-}
-
-.account-role-menu {
-    position: absolute;
-    z-index: 1000;
-    top: calc(100% + 6px);
-    left: 0;
-    right: 0;
-
-    display: grid;
-    gap: 4px;
-
-    padding: 6px;
-    border: 1px solid var(--border);
-    border-radius: 11px;
-
-    background: var(--panel-dark);
-    box-shadow: 0 16px 35px rgba(0, 0, 0, 0.35);
-}
-
-.account-role-menu[hidden] {
-    display: none;
-}
-
-.account-role-option {
-    width: 100%;
-    min-height: 38px;
-
-    padding: 8px 10px;
-    border: 0;
-    border-radius: 8px;
-
-    background: transparent;
-    color: var(--text);
-    text-align: left;
-}
-
-.account-role-option:hover,
-.account-role-option:focus {
-    background: var(--bg-secondary);
-    color: var(--text);
-    outline: none;
-}
-
-.account-role-option.selected {
-    background: var(--accent-soft);
-    color: var(--accent);
-}
-.account-role-trigger {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.account-role-icon {
-    flex: 0 0 auto;
-    font-size: 16px;
-    line-height: 1;
-}
-
-.account-role-label {
-    flex: 1;
-    text-align: left;
-}
-
-.account-role-trigger .item-type-arrow {
-    flex: 0 0 auto;
-}
-
-.account-role-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex: 0 0 auto;
-    color: var(--accent);
-}
-
-.account-role-icon svg {
-    display: block;
-}
-
-/* Odstranění dělicí čáry mezi Předmětem a Počtem */
-.items-table .item-row > input[name="item_value"] {
-    border-right: none !important;
-}
-
-/* Vodorovná čára pouze mezi jednotlivými řádky stepperu */
-.items-table .item-row:not(.first-item-row) .item-quantity-stepper {
-    border-top: 1px solid var(--border);
 }

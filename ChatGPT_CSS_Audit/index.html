@@ -26,8 +26,6 @@
     value="{{ selected_customer_name }}"
     placeholder="Piš název zákazníka nebo server, např. Gapa nebo r47"
     onkeydown="confirmCustomerInput(event)"
-    oninput="scheduleTerminalVersionLoad()"
-    onchange="loadTerminalVersion()"
     required
 >
             <datalist id="customers">
@@ -45,17 +43,6 @@
             <input name="jira" value="{{ selected_jira }}" placeholder="např. SUP-847">
         </div>
 
-        <div class="field-group wide">
-            <label>Nejčastější verze VLT</label>
-            <input
-                id="terminal-version-filename"
-                type="text"
-                value=""
-                placeholder="Vyber zákazníka"
-                readonly
-            >
-        </div>
-        
         <div class="field-group">
             <label>Převzal</label>
             <input name="receiver" list="receivers" value="{{ selected_receiver }}" placeholder="Piš dopravce nebo zákazníka">
@@ -198,83 +185,6 @@
 <script>
 
 let itemTypeCloseTimer = null;
-
-let terminalVersionLoadTimer = null;
-let terminalVersionRequestController = null;
-
-function scheduleTerminalVersionLoad() {
-    if (terminalVersionLoadTimer) {
-        clearTimeout(terminalVersionLoadTimer);
-    }
-
-    terminalVersionLoadTimer = setTimeout(() => {
-        loadTerminalVersion();
-    }, 350);
-}
-
-async function loadTerminalVersion() {
-    const customerInput = document.querySelector(
-        'input[name="customer_name"]'
-    );
-
-    const versionInput = document.querySelector(
-        "#terminal-version-filename"
-    );
-
-    if (!customerInput || !versionInput) {
-        return;
-    }
-
-    const customerName = customerInput.value.trim();
-
-    if (!customerName) {
-        versionInput.value = "";
-        versionInput.placeholder = "Vyber zákazníka";
-        return;
-    }
-
-    if (terminalVersionRequestController) {
-        terminalVersionRequestController.abort();
-    }
-
-    terminalVersionRequestController = new AbortController();
-
-    versionInput.value = "";
-    versionInput.placeholder = "Načítám…";
-
-    try {
-        const response = await fetch(
-            `/api/customer-terminal-version?customer_name=${encodeURIComponent(customerName)}`,
-            {
-                signal: terminalVersionRequestController.signal,
-                headers: {
-                    "Accept": "application/json",
-                },
-            }
-        );
-
-        const data = await response.json();
-
-        if (!response.ok || !data.success) {
-            throw new Error(
-                data.error || "Verzi terminálů se nepodařilo zjistit."
-            );
-        }
-
-        versionInput.value = data.filename || "";
-        versionInput.placeholder = "";
-    } catch (error) {
-        if (error.name === "AbortError") {
-            return;
-        }
-
-        versionInput.value = "";
-        versionInput.placeholder =
-            error.message || "Verzi se nepodařilo zjistit";
-    } finally {
-        terminalVersionRequestController = null;
-    }
-}
 
 function closeItemTypeDropdown() {
     const overlay = document.querySelector("#item-type-overlay");
@@ -603,8 +513,6 @@ function saveProtocolDraft() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    loadTerminalVersion();
-
     document
         .querySelector(".protocol-form")
         ?.addEventListener("input", saveProtocolDraft);

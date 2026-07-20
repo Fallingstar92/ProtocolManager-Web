@@ -380,7 +380,7 @@ function addItemRow() {
         type="number"
         min="0"
         step="1"
-        placeholder="0"
+        placeholder="Počet"
     >
 
     <button
@@ -434,113 +434,4 @@ function removeItemRow(button) {
 ></div>
 
 </body>
-
-<script>
-function closeAccountRoleDropdowns() {
-    document.querySelectorAll(
-        ".account-role-dropdown"
-    ).forEach(function (dropdown) {
-        const menu = dropdown.querySelector(
-            ".account-role-menu"
-        );
-
-        const trigger = dropdown.querySelector(
-            ".account-role-trigger"
-        );
-
-        dropdown.classList.remove("open");
-
-        if (menu) {
-            menu.hidden = true;
-        }
-
-        if (trigger) {
-            trigger.setAttribute(
-                "aria-expanded",
-                "false"
-            );
-        }
-    });
-}
-
-function toggleAccountRoleDropdown(button) {
-    const dropdown = button.closest(
-        ".account-role-dropdown"
-    );
-
-    if (!dropdown) return;
-
-    const menu = dropdown.querySelector(
-        ".account-role-menu"
-    );
-
-    if (!menu) return;
-
-    const shouldOpen = menu.hidden;
-
-    closeAccountRoleDropdowns();
-
-    if (shouldOpen) {
-        menu.hidden = false;
-        dropdown.classList.add("open");
-
-        button.setAttribute(
-            "aria-expanded",
-            "true"
-        );
-    }
-}
-
-function selectAccountRole(button) {
-    const dropdown = button.closest(
-        ".account-role-dropdown"
-    );
-
-    if (!dropdown) return;
-
-    const input = dropdown.querySelector(
-        ".account-role-value"
-    );
-
-    const label = dropdown.querySelector(
-        ".account-role-label"
-    );
-
-    const value = button.dataset.value || "";
-    const text = button.textContent.trim();
-
-    if (input) {
-        input.value = value;
-    }
-
-    if (label) {
-        label.textContent = text;
-    }
-
-    dropdown.querySelectorAll(
-        ".account-role-option"
-    ).forEach(function (option) {
-        option.classList.toggle(
-            "selected",
-            option === button
-        );
-    });
-
-    closeAccountRoleDropdowns();
-}
-
-document.addEventListener(
-    "click",
-    function (event) {
-        if (
-            !event.target.closest(
-                ".account-role-dropdown"
-            )
-        ) {
-            closeAccountRoleDropdowns();
-        }
-    }
-);
-</script>
-
 </html>

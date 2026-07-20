@@ -130,42 +130,20 @@
             >
         </div>
 
-<div class="field-group warehouse-quantity-field">
-    <label for="warehouse-item-quantity">
-        Počáteční stav
-    </label>
-
-    <div class="warehouse-quantity-stepper">
-        <button
-            class="warehouse-quantity-stepper-button"
-            type="button"
-            aria-label="Snížit počáteční stav"
-            onclick="warehouseAddQuantityStep(-1)"
-        >
-            −
-        </button>
-
-        <input
-            id="warehouse-item-quantity"
-            class="warehouse-quantity-stepper-input"
-            name="initial_quantity"
-            type="number"
-            min="0"
-            step="1"
-            value="0"
-            required
-        >
-
-        <button
-            class="warehouse-quantity-stepper-button warehouse-quantity-stepper-button-plus"
-            type="button"
-            aria-label="Zvýšit počáteční stav"
-            onclick="warehouseAddQuantityStep(1)"
-        >
-            +
-        </button>
-    </div>
-</div>
+        <div class="field-group warehouse-quantity-field">
+            <label for="warehouse-item-quantity">
+                Počáteční stav
+            </label>
+            <input
+                id="warehouse-item-quantity"
+                name="initial_quantity"
+                type="number"
+                min="0"
+                step="1"
+                value="0"
+                required
+            >
+        </div>
 
         <label class="checkbox-row">
             <input
@@ -651,36 +629,6 @@ function warehouseQuantityStep(delta) {
         new Event("input", { bubbles: true })
     );
     quantityInput.dispatchEvent(
-        new Event("change", { bubbles: true })
-    );
-}
-
-function warehouseAddQuantityStep(delta) {
-    const input = document.getElementById(
-        "warehouse-item-quantity"
-    );
-
-    if (!input) return;
-
-    const currentValue = Number.parseInt(
-        input.value,
-        10
-    );
-
-    const safeValue = Number.isFinite(currentValue)
-        ? currentValue
-        : 0;
-
-    input.value = Math.max(
-        0,
-        safeValue + delta
-    );
-
-    input.dispatchEvent(
-        new Event("input", { bubbles: true })
-    );
-
-    input.dispatchEvent(
         new Event("change", { bubbles: true })
     );
 }
