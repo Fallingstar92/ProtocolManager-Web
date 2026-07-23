@@ -273,8 +273,10 @@ body {
 }
 
 .titlebar {
+    display: flex;
+    align-items: center;
     justify-content: space-between;
-    height: 44px;
+    min-height: 64px;
 }
 
 .brand {
@@ -1521,12 +1523,15 @@ body.theme-casino .hero p {
 }
 
 .login-card {
-    width: 100%;
-    max-width: 460px;
+    position: relative;
+    z-index: 2;
+
+    width: min(100%, 420px);
+    padding: 24px 32px 30px;
+
     background: var(--panel);
     border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 32px;
+    border-radius: 18px;
     box-shadow: var(--shadow);
 }
 
@@ -1549,9 +1554,9 @@ body.theme-casino .hero p {
     gap: 18px;
 }
 
-.login-card button {
+.login-card .login-submit {
     width: 100%;
-    margin-top: 10px;
+    margin-top: 4px;
 }
 
 /* ================= MODERN SELECT ================= */
@@ -2011,6 +2016,88 @@ select:focus {
     flex-wrap: wrap;
 }
 
+.warehouse-toolbar-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 7px;
+}
+
+.warehouse-inactive-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    font-weight: 500;
+
+    cursor: pointer;
+    user-select: none;
+}
+
+.warehouse-inactive-toggle:hover {
+    color: var(--text);
+}
+
+.warehouse-inactive-toggle input {
+    width: 13px;
+    height: 13px;
+    margin: 0;
+
+    accent-color: var(--accent);
+    cursor: pointer;
+}
+
+.warehouse-toolbar-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+}
+
+.warehouse-toolbar-buttons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.warehouse-inactive-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    user-select: none;
+}
+
+.warehouse-inactive-toggle input {
+    width: 13px;
+    height: 13px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: var(--accent);
+}
+
+.warehouse-inactive-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    user-select: none;
+}
+
+.warehouse-inactive-toggle input {
+    width: 13px;
+    height: 13px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: var(--accent);
+}
+
 .muted-text {
     color: var(--text-muted);
 }
@@ -2122,6 +2209,75 @@ select:focus {
 .warehouse-quantity-field {
     width: 170px;
     max-width: 100%;
+}
+
+.warehouse-cell-inactive {
+    color: var(--text-muted);
+    opacity: 0.65;
+}
+
+.warehouse-cell-inactive strong,
+.warehouse-cell-inactive .warehouse-code {
+    color: inherit;
+}
+
+.warehouse-inactive-badge {
+    display: inline-block;
+    margin-left: 8px;
+
+    color: var(--text-muted);
+    font-size: 0.85em;
+    font-weight: 400;
+}
+
+.warehouse-cell-inactive .secondary-button {
+    opacity: 0.7;
+}
+
+.warehouse-inactive-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.warehouse-inactive-actions form {
+    margin: 0;
+}
+
+.warehouse-edit-inactive-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px 0 4px;
+}
+
+.warehouse-edit-inactive-content[hidden] {
+    display: none;
+}
+
+.warehouse-edit-inactive-text {
+    margin: 0;
+    color: var(--text-muted);
+    text-align: center;
+    line-height: 1.5;
+}
+
+.warehouse-edit-inactive-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding-top: 4px;
+}
+
+.warehouse-edit-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
 }
 
 .checkbox-row {
@@ -3808,4 +3964,330 @@ select.item-type-select:focus {
 /* Vodorovná čára pouze mezi jednotlivými řádky stepperu */
 .items-table .item-row:not(.first-item-row) .item-quantity-stepper {
     border-top: 1px solid var(--border);
+}
+
+
+.titlebar-logo {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.titlebar-logo img {
+    display: block;
+    width: auto;
+    height: 90px;
+    max-width: 100%;
+}
+
+.login-page {
+    position: relative;
+    overflow: hidden;
+    min-height: calc(100vh - 80px);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-page::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+
+    background-repeat: no-repeat;
+    background-position: 20% 30%;
+    background-size: 3200px;
+
+    opacity: 1;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.login-page::before {
+    background-image: url("/static/images/login-bg-light.png");
+}
+
+.login-card {
+    position: relative;
+    z-index: 1;
+}
+
+.login-brand {
+    display: flex;
+    justify-content: center;
+    margin-bottom: -15px;
+}
+
+.login-brand img {
+    display: block;
+    width: min(100%, 320px);
+    height: auto;
+    object-fit: contain;
+}
+
+.login-header {
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 12px;
+}
+
+.login-header h1 {
+    margin: 0;
+    font-size: 1.7rem;
+    line-height: 1.2;
+}
+
+.login-header p {
+    margin: 4px 0 0;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.login-form {
+    display: grid;
+    gap: 14px;
+}
+
+.login-field {
+    display: grid;
+    gap: 8px;
+    color: var(--text);
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+
+.login-input-wrap {
+    position: relative;
+    display: block;
+}
+
+.login-input-wrap input {
+    width: 100%;
+    height: 48px;
+    padding: 0 46px;
+
+    color: var(--text);
+    background: var(--input);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+
+    font: inherit;
+    font-weight: 500;
+    outline: none;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background-color 0.2s ease;
+}
+
+.login-input-wrap input::placeholder {
+    color: var(--text-muted);
+    opacity: 0.75;
+}
+
+.login-input-wrap input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.login-input-icon {
+    position: absolute;
+    top: 50%;
+    left: 16px;
+    z-index: 1;
+
+    width: 18px;
+    height: 18px;
+
+    fill: none;
+    stroke: var(--text-muted);
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.login-password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+
+    display: grid;
+    place-items: center;
+
+    width: 32px;
+    height: 32px;
+    padding: 0;
+
+    color: var(--text-muted);
+    background: transparent;
+    border: 0;
+    border-radius: 50%;
+
+    transform: translateY(-50%);
+    cursor: pointer;
+}
+
+.login-password-toggle:hover {
+    color: var(--text);
+    background: color-mix(in srgb, var(--text) 7%, transparent);
+}
+
+.login-password-toggle svg {
+    width: 18px;
+    height: 18px;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.login-submit {
+    width: 100%;
+    min-height: 48px;
+    margin-top: 4px;
+    border-radius: 8px;
+    font-weight: 700;
+}
+
+body.login-body {
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+body.login-body .app-shell {
+    width: 100%;
+    max-width: none;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+body.login-body .login-page {
+    width: 100%;
+    min-height: 100vh;
+}
+
+/* Login stránka bez jakéhokoliv vnějšího rámu */
+html,
+body.login-body {
+    width: 100%;
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body.login-body {
+    min-height: 100vh;
+    overflow: hidden;
+    background: transparent;
+}
+
+body.login-body .app-shell {
+    width: 100vw;
+    max-width: none;
+    min-height: 100vh;
+
+    margin: 0;
+    padding: 0;
+
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    outline: none;
+}
+
+body.login-body .login-page {
+    width: 100%;
+    min-height: 100vh;
+    margin: 0;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.login-form .login-submit {
+    margin-top: 40px;
+}
+
+.warehouse-permanent-delete-button {
+    min-height: 46px;
+    padding: 0 28px;
+    border: 2px solid var(--danger, #b42323);
+    border-radius: 12px;
+    background: transparent;
+    color: var(--danger, #b42323);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        background-color 0.15s ease,
+        color 0.15s ease,
+        border-color 0.15s ease;
+}
+
+.warehouse-permanent-delete-button:hover {
+    background: rgba(180, 35, 35, 0.08);
+}
+
+.warehouse-permanent-delete-button:focus-visible {
+    outline: 3px solid rgba(180, 35, 35, 0.2);
+    outline-offset: 2px;
+}
+
+.warehouse-edit-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+}
+
+.warehouse-edit-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+#warehouse-edit-dialog
+.warehouse-edit-header-actions
+.warehouse-permanent-delete-button {
+    background: transparent !important;
+    color: var(--danger, #b42323) !important;
+    border: 2px solid var(--danger, #b42323) !important;
+}
+
+#warehouse-edit-dialog
+.warehouse-edit-header-actions
+.warehouse-permanent-delete-button:hover {
+    background: rgba(180, 35, 35, 0.08) !important;
+    color: var(--danger, #b42323) !important;
+}
+
+.danger-button,
+.warehouse-permanent-delete-button,
+button.secondary-button[type="button"][onclick*="close"] {
+    background: transparent !important;
+    color: var(--danger, #b42323) !important;
+    border: 2px solid var(--danger, #b42323) !important;
+}
+
+.danger-button:hover,
+.warehouse-permanent-delete-button:hover,
+button.secondary-button[type="button"][onclick*="close"]:hover {
+    background: rgba(180, 35, 35, 0.08) !important;
+    color: var(--danger, #b42323) !important;
+    border-color: var(--danger, #b42323) !important;
 }

@@ -37,13 +37,18 @@ if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
 from src.pdf.generator import generate_protocol_pdf  # noqa: E402
+
 from services.customers import customer_display_name, split_address
+from src.services.cml_customers import (
+    fetch_customer_from_cml,
+    load_customers,
+)
+
 from src.database.customers import (
     add_customer as db_add_customer,
     delete_customer as db_delete_customer,
     get_customer_by_id,
-    load_customers,
-    update_customer as db_update_customer,
+
 )
 
 from src.database.database import connect  # noqa: E402
@@ -69,6 +74,8 @@ from src.database.warehouse import (
     get_warehouse_item,
     list_warehouse_items,
     list_warehouse_movements,
+    activate_warehouse_item,
+    delete_warehouse_item_permanently,
 )  # noqa: E402
 
 from src.database.users import (
@@ -382,16 +389,30 @@ def _date_to_pdf_format(date_value: str) -> str:
         return date_value
 
 @app.get("/login", response_class=HTMLResponse)
-def login_page(request: Request) -> HTMLResponse:
+def login_page(request: Request):
+    if request.session.get("username"):
+        role = request.session.get("role")
+
+        if role == "accounting":
+            return RedirectResponse(
+                url="/protocols",
+                status_code=303,
+            )
+
+        return RedirectResponse(
+            url="/",
+            status_code=303,
+        )
+
     return templates.TemplateResponse(
-    "login.html",
-    {
-        "request": request,
-        "app_title": APP_TITLE,
-        "theme": "light",
-        "error": "",
-    },
-)
+        "login.html",
+        {
+            "request": request,
+            "app_title": APP_TITLE,
+            "theme": "light",
+            "error": "",
+        },
+    )
 
 @app.post("/login", response_class=HTMLResponse)
 def login_submit(
@@ -890,25 +911,31 @@ def l1_warehouse_page(request: Request) -> HTMLResponse:
     if redirect:
         return redirect
 
+    show_inactive = request.query_params.get("inactive") == "1"
+
     status_messages = {
         "item-added": "Artikl byl přidán.",
         "quantity-updated": "Stav skladu byl upraven.",
         "item-archived": "Artikl byl archivován.",
+        "item-activated": "Artikl byl znovu aktivován.",
         "item-deleted": "Artikl byl trvale odstraněn.",
     }
 
     return templates.TemplateResponse(
-    "warehouse.html",
-    _default_context(
-        request,
-        warehouse_items=list_warehouse_items(),
-        status=status_messages.get(
-            request.query_params.get("status", ""),
-            "",
+        "warehouse.html",
+        _default_context(
+            request,
+            warehouse_items=list_warehouse_items(
+                include_inactive=show_inactive,
+            ),
+            show_inactive=show_inactive,
+            status=status_messages.get(
+                request.query_params.get("status", ""),
+                "",
+            ),
+            error=request.query_params.get("error", ""),
         ),
-        error=request.query_params.get("error", ""),
-    ),
-)
+    )
 
 @app.post("/l1-warehouse/items/add")
 def l1_warehouse_add_item(
@@ -956,6 +983,37 @@ def l1_warehouse_add_item(
         status_code=303,
     )
 
+@app.post("/l1-warehouse/items/{item_id}/activate")
+def l1_warehouse_activate_item(
+    request: Request,
+    item_id: int,
+):
+    _require_roles(request, "admin", "user")
+
+    success, message = activate_warehouse_item(item_id)
+
+    parameter = "status" if success else "error"
+
+    return RedirectResponse(
+        url=f"/l1-warehouse?inactive=1&{parameter}={quote(message)}",
+        status_code=303,
+    )
+
+@app.post("/l1-warehouse/items/{item_id}/delete")
+def l1_warehouse_delete_item(
+    request: Request,
+    item_id: int,
+):
+    _require_roles(request, "admin", "user")
+
+    success, message = delete_warehouse_item_permanently(item_id)
+
+    parameter = "status" if success else "error"
+
+    return RedirectResponse(
+        url=f"/l1-warehouse?inactive=1&{parameter}={quote(message)}",
+        status_code=303,
+    )
 
 @app.post("/l1-warehouse/adjust")
 def l1_warehouse_adjust(
@@ -1169,43 +1227,7 @@ def customers_page(request: Request) -> HTMLResponse:
 @app.post("/customers/add")
 def add_customer(
     request: Request,
-    company: str = Form(...),
-    server: str = Form(""),
-    address: str = Form(""),
-) -> RedirectResponse:
-    redirect = _require_roles(request, "admin","user")
-    if redirect:
-        return redirect
-    clean_company = company.strip()
-
-    db_add_customer(
-        clean_company,
-        server.strip(),
-        address.strip(),
-    )
-
-    _audit(
-        request,
-        action="CREATE",
-        entity="Zákazník",
-        description=(
-            f"Přidal zákazníka '{clean_company}'."
-        ),
-    )
-
-    return RedirectResponse(
-        url="/customers",
-        status_code=303,
-    )
-
-
-@app.post("/customers/update/{customer_id}")
-def update_customer(
-    request: Request,
-    customer_id: int,
-    company: str = Form(...),
-    server: str = Form(""),
-    address: str = Form(""),
+    server: str = Form(...),
 ) -> RedirectResponse:
     redirect = _require_roles(
         request,
@@ -1215,29 +1237,70 @@ def update_customer(
     if redirect:
         return redirect
 
-    clean_company = company.strip()
+    clean_server = server.strip().lower()
 
-    db_update_customer(
-        customer_id,
-        clean_company,
-        server.strip(),
-        address.strip(),
+    if not clean_server:
+        return RedirectResponse(
+            url="/customers?error=missing-server",
+            status_code=303,
+        )
+
+    try:
+        cml_customer = fetch_customer_from_cml(clean_server)
+    except ValueError:
+        return RedirectResponse(
+            url="/customers?error=invalid-server",
+            status_code=303,
+        )
+    except LookupError:
+        return RedirectResponse(
+            url="/customers?error=server-not-found",
+            status_code=303,
+        )
+    except RuntimeError:
+        return RedirectResponse(
+            url="/customers?error=cml-unavailable",
+            status_code=303,
+        )
+
+    existing_customer = next(
+        (
+            customer
+            for customer in _customers()
+            if str(customer.get("server", "")).strip().lower()
+            == clean_server
+        ),
+        None,
+    )
+
+    if existing_customer is not None:
+        return RedirectResponse(
+            url="/customers?error=already-tracked",
+            status_code=303,
+        )
+
+    db_add_customer(
+        str(cml_customer["company"]),
+        clean_server,
+        str(cml_customer["address"]),
     )
 
     _audit(
         request,
-        action="UPDATE",
+        action="CREATE",
         entity="Zákazník",
-        entity_id=customer_id,
         description=(
-            f"Upravil zákazníka '{clean_company}'."
+            f"Přidal sledovaný server "
+            f"'{clean_server}' "
+            f"({cml_customer['company']})."
         ),
     )
 
     return RedirectResponse(
-        url="/customers",
+        url="/customers?success=added",
         status_code=303,
     )
+
 
 @app.post("/customers/delete/{customer_id}")
 def delete_customer(
@@ -1254,11 +1317,17 @@ def delete_customer(
 
     customer = get_customer_by_id(customer_id)
 
-    customer_name = (
-        str(customer["company"])
-        if customer
-        else f"ID {customer_id}"
-    )
+    if customer:
+        customer_server = str(
+            customer.get("server", "")
+        ).strip()
+
+        customer_name = str(
+            customer.get("company", "")
+        ).strip()
+    else:
+        customer_server = ""
+        customer_name = f"ID {customer_id}"
 
     db_delete_customer(customer_id)
 
@@ -1268,8 +1337,14 @@ def delete_customer(
         entity="Zákazník",
         entity_id=customer_id,
         description=(
-            f"Smazal zákazníka '{customer_name}'."
+            f"Odebral sledovaný server "
+            f"'{customer_server or customer_name}'."
         ),
+    )
+
+    return RedirectResponse(
+        url="/customers?success=removed",
+        status_code=303,
     )
 
     return RedirectResponse(

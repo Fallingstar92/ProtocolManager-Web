@@ -3,15 +3,33 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <title>{{ app_title }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}?v=theme14">
+
+    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}?v=theme20">
+
+    <link rel="icon"
+          type="image/png"
+          href="{{ url_for('static', path='favicon-pm-blue.png') }}">
+
 </head>
 
-<body class="{% if request.session.get('role') == 'accounting' and (request.url.path.startswith('/protocols') or request.url.path == '/account') %}theme-light{% else %}theme-{{ theme }}{% endif %}">
-    <main class="app-shell">
+<body
+    class="{% if request.session.get('role') == 'accounting'
+        and (request.url.path.startswith('/protocols')
+        or request.url.path == '/account') %}
+        theme-light
+    {% else %}
+        theme-{{ theme }}
+    {% endif %}
+    {% if request.url.path == '/login' %}
+        login-body
+    {% endif %}"
+    data-is-login="{% if request.url.path == '/login' %}true{% else %}false{% endif %}"
+    data-active-theme="{{ theme | default('light', true) }}"
+>
 
-        <header class="titlebar">
-        </header>
+<main class="app-shell">
 
 {% if request.url.path != "/login"
    and request.url.path != "/account"
@@ -21,7 +39,7 @@
     <section class="hero glow-card">
 {% if request.url.path == "/customers" %}
     <h1>Zákazníci</h1>
-    <p>Správa zákazníků, serverů a adres.</p>
+    <p>Správa zákazníků sledovaných podle serveru.</p>
 
 {% elif request.url.path.startswith("/l1-warehouse") %}
     <h1>L1 Sklad</h1>
@@ -434,6 +452,7 @@ function removeItemRow(button) {
 ></div>
 
 </body>
+
 
 <script>
 function closeAccountRoleDropdowns() {

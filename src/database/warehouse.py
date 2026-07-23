@@ -38,7 +38,7 @@ def list_warehouse_items(
                     wi.protocol_enabled,
                     wi.active,
                     wi.created_at
-                ORDER BY wi.name
+                ORDER BY wi.active DESC, wi.name
                 """
             )
 
@@ -352,6 +352,97 @@ def adjust_warehouse_quantity(
 
     return True, "Stav skladu byl upraven."
 
+def activate_warehouse_item(item_id: int) -> tuple[bool, str]:
+    with connect() as conn:
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute(
+                """
+                SELECT id, active
+                FROM warehouse_items
+                WHERE id = %s
+                """,
+                (item_id,),
+            )
+
+            item = cursor.fetchone()
+
+            if not item:
+                return False, "Skladový artikl nebyl nalezen."
+
+            cursor.execute(
+                """
+                UPDATE warehouse_items
+                SET active = 1,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = %s
+                """,
+                (item_id,),
+            )
+
+            conn.commit()
+
+        except Exception:
+            conn.rollback()
+            raise
+
+        finally:
+            cursor.close()
+
+    return True, "Artikl byl aktivován."
+
+
+def delete_warehouse_item_permanently(item_id: int) -> tuple[bool, str]:
+    with connect() as conn:
+        cursor = conn.cursor(dictionary=True)
+
+        try:
+            cursor.execute(
+                """
+                SELECT id, active
+                FROM warehouse_items
+                WHERE id = %s
+                """,
+                (item_id,),
+            )
+
+            item = cursor.fetchone()
+
+            if not item:
+                return False, "Skladový artikl nebyl nalezen."
+
+            active = bool(item["active"])
+
+            if active:
+                return False, "Aktivní artikl nelze kompletně odstranit."
+
+            cursor.execute(
+                """
+                DELETE FROM warehouse_movements
+                WHERE warehouse_item_id = %s
+                """,
+                (item_id,),
+            )
+
+            cursor.execute(
+                """
+                DELETE FROM warehouse_items
+                WHERE id = %s
+                """,
+                (item_id,),
+            )
+
+            conn.commit()
+
+        except Exception:
+            conn.rollback()
+            raise
+
+        finally:
+            cursor.close()
+
+    return True, "Artikl byl kompletně odstraněn."
 
 def archive_warehouse_item(
     *,
@@ -521,6 +612,7 @@ def list_warehouse_movements(
 
         finally:
             cursor.close()
+
 
 
 def issue_protocol_items(
@@ -701,3 +793,4 @@ def issue_protocol_items(
 
         if own_connection:
             conn.close()
+

@@ -5,8 +5,15 @@
 
     <section class="login-card">
 
+        <div class="login-brand">
+            <img
+                src="{{ url_for('static', path='images/protocol-manager-logo.png') }}"
+                alt="Protocol Manager"
+            >
+        </div>
+
         <div class="login-header">
-            <h1>Protocol Manager</h1>
+            <h1>Přihlášení</h1>
             <p>Přihlaste se ke správě předávacích protokolů.</p>
         </div>
 
@@ -14,20 +21,69 @@
             <div class="status status-error">{{ error }}</div>
         {% endif %}
 
-        <form method="post" action="/login" class="form-grid">
+        <form method="post" action="/login" class="login-form">
 
-            <label>
-                Uživatelské jméno
-                <input type="text" name="username" required autofocus>
+            <label class="login-field">
+                <span>Uživatelské jméno</span>
+
+                <span class="login-input-wrap">
+                    <svg
+                        class="login-input-icon"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                    >
+                        <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm7 8a7 7 0 0 0-14 0"/>
+                    </svg>
+
+                    <input
+                        type="text"
+                        name="username"
+                        placeholder="Zadejte uživatelské jméno"
+                        autocomplete="username"
+                        required
+                        autofocus
+                    >
+                </span>
             </label>
 
-            <label>
-                Heslo
-                <input type="password" name="password" required>
+            <label class="login-field">
+                <span>Heslo</span>
+
+                <span class="login-input-wrap">
+                    <svg
+                        class="login-input-icon"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                    >
+                        <rect x="5" y="10" width="14" height="10" rx="2"/>
+                        <path d="M8 10V7a4 4 0 0 1 8 0v3"/>
+                    </svg>
+
+                    <input
+                        id="login-password"
+                        type="password"
+                        name="password"
+                        placeholder="Zadejte své heslo"
+                        autocomplete="current-password"
+                        required
+                    >
+
+                    <button
+                        class="login-password-toggle"
+                        type="button"
+                        aria-label="Zobrazit heslo"
+                        onclick="toggleLoginPassword(this)"
+                    >
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/>
+                            <circle cx="12" cy="12" r="2.5"/>
+                        </svg>
+                    </button>
+                </span>
             </label>
 
-            <button class="primary-button" type="submit">
-                Přihlásit
+            <button class="primary-button login-submit" type="submit">
+                Přihlásit se
             </button>
 
         </form>
@@ -35,4 +91,22 @@
     </section>
 
 </div>
+
+<script>
+function toggleLoginPassword(button) {
+    const input = document.querySelector("#login-password");
+
+    if (!input) {
+        return;
+    }
+
+    const passwordIsVisible = input.type === "text";
+    input.type = passwordIsVisible ? "password" : "text";
+
+    button.setAttribute(
+        "aria-label",
+        passwordIsVisible ? "Zobrazit heslo" : "Skrýt heslo"
+    );
+}
+</script>
 {% endblock %}

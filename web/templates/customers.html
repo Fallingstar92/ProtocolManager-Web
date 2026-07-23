@@ -3,77 +3,127 @@
 {% block content %}
 <section class="glow-card customers-card">
 
-    <form class="customer-form customer-add-form" method="post" action="/customers/add">
+    {% set error = request.query_params.get("error", "") %}
+    {% set success = request.query_params.get("success", "") %}
+
+    {% if error == "missing-server" %}
+        <p class="form-message form-message-error">
+            Vyplň server zákazníka.
+        </p>
+    {% elif error == "invalid-server" %}
+        <p class="form-message form-message-error">
+            Server obsahuje neplatné znaky.
+        </p>
+    {% elif error == "server-not-found" %}
+        <p class="form-message form-message-error">
+            Zadaný server nebyl v CML nalezen.
+        </p>
+    {% elif error == "cml-unavailable" %}
+        <p class="form-message form-message-error">
+            CML momentálně není dostupné.
+        </p>
+    {% elif error == "already-tracked" %}
+        <p class="form-message form-message-error">
+            Tento server už je mezi sledovanými zákazníky.
+        </p>
+    {% elif success == "added" %}
+        <p class="form-message form-message-success">
+            Zákazník byl přidán mezi sledované.
+        </p>
+    {% elif success == "removed" %}
+        <p class="form-message form-message-success">
+            Zákazník byl odebrán ze sledovaných.
+        </p>
+    {% endif %}
+
+    <form
+        class="customer-form customer-add-form"
+        method="post"
+        action="/customers/add"
+    >
         <div class="customer-fields">
             <label>
-                Název zákazníka
-                <input name="company" placeholder="Např. DOXXbet s.r.o." required>
-            </label>
-
-            <label>
                 Server
-                <input name="server" placeholder="Např. r203">
-            </label>
-
-            <label>
-                Adresa
-                <input name="address" placeholder="Např. Praha, ulice...">
+                <input
+                    name="server"
+                    placeholder="Např. r203"
+                    autocomplete="off"
+                    required
+                >
             </label>
         </div>
 
-        <button class="primary-button" type="submit">Přidat zákazníka</button>
+        <button class="primary-button" type="submit">
+            Přidat zákazníka
+        </button>
     </form>
 
     <div class="customers-list">
         {% for customer in customers %}
-        <form
+        <div
             class="customer-form customer-existing-form"
-            method="post"
-            action="/customers/update/{{ customer.id }}"
             data-customer-search="{{ (
                 customer.company ~ ' ' ~
                 (customer.server or '') ~ ' ' ~
                 (customer.address or '')
-        ) | lower }}"
-    >
-            
+            ) | lower }}"
+        >
             <div class="customer-fields">
                 <label>
                     Název zákazníka
-                    <input name="company" value="{{ customer.company }}" required>
+                    <input
+                        value="{{ customer.company }}"
+                        readonly
+                    >
                 </label>
 
                 <label>
                     Server
-                    <input name="server" value="{{ customer.server }}">
+                    <input
+                        value="{{ customer.server }}"
+                        readonly
+                    >
                 </label>
 
                 <label>
                     Adresa
-                    <input name="address" value="{{ customer.address }}">
+                    <input
+                        value="{{ customer.address }}"
+                        readonly
+                    >
                 </label>
             </div>
 
             <div class="customer-actions">
-                <button class="primary-button" type="submit">Uložit</button>
-                <button
-                    class="danger-button"
-                    type="submit"
-                    formaction="/customers/delete/{{ customer.id }}"
-                    onclick="return confirm('Opravdu smazat zákazníka?')"
+                <form
+                    method="post"
+                    action="/customers/delete/{{ customer.id }}"
                 >
-                    Smazat
-                </button>
+                    <button
+                        class="danger-button"
+                        type="submit"
+                        onclick="
+                            return confirm(
+                                'Opravdu odebrat zákazníka ze sledovaných?'
+                            )
+                        "
+                    >
+                        Odebrat
+                    </button>
+                </form>
             </div>
-        </form>
+        </div>
         {% endfor %}
     </div>
 </section>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-    const searchInput = document.querySelector("#customer-search");
-    const customerForms = document.querySelectorAll(
+    const searchInput = document.querySelector(
+        "#customer-search"
+    );
+
+    const customerRows = document.querySelectorAll(
         ".customer-existing-form"
     );
 
@@ -86,12 +136,12 @@ document.addEventListener("DOMContentLoaded", () => {
             .trim()
             .toLocaleLowerCase("cs");
 
-        customerForms.forEach(form => {
+        customerRows.forEach(row => {
             const searchableText = (
-                form.dataset.customerSearch || ""
+                row.dataset.customerSearch || ""
             ).toLocaleLowerCase("cs");
 
-            form.hidden = (
+            row.hidden = (
                 query !== "" &&
                 !searchableText.includes(query)
             );
